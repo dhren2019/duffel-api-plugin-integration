@@ -42,7 +42,7 @@ if (!function_exists('duffel_search_flights')) {
                 'Duffel-Version' => 'v1',
                 'Content-Type' => 'application/json'
             ],
-            'timeout' => 15, // Aumentar el tiempo de espera a 15 segundos
+            'timeout' => 15,
             'body' => wp_json_encode($data)
         ]);
 
@@ -53,6 +53,9 @@ if (!function_exists('duffel_search_flights')) {
 
         $body = wp_remote_retrieve_body($response);
         $result = json_decode($body, true);
+
+        // Verificar la respuesta de la API
+        error_log('API Response: ' . print_r($result, true));
 
         if (isset($result['data']['offers'])) {
             return $result['data']['offers'];
