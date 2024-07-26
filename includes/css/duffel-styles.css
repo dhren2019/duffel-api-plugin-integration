@@ -1,0 +1,102 @@
+.duffel-search-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.duffel-search-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.duffel-search-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.duffel-search-form input[type="text"],
+.duffel-search-form input[type="date"],
+.duffel-search-form select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.duffel-search-form button {
+    grid-column: span 2;
+    padding: 10px;
+    font-size: 16px;
+    color: #fff;
+    background: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.duffel-search-form button:hover {
+    background: #0056b3;
+}
+
+.duffel-flights {
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.flight {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 20px;
+}
+
+.flight img.airline-logo {
+    max-width: 50px;
+    align-self: center;
+}
+
+.flight-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.flight-details > div {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flight-details p {
+    margin: 5px 0;
+}
+
+.flight-price {
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flight-select button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.flight-select button:hover {
+    background: #0056b3;
+}
