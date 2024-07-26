@@ -72,8 +72,15 @@ function duffel_search_flights_shortcode($atts) {
         $destination = sanitize_text_field($_POST['destination']);
         $departure_date = sanitize_text_field($_POST['departure_date']);
         $return_date = isset($_POST['return_date']) ? sanitize_text_field($_POST['return_date']) : null;
-
+    
+        // Verificar los datos antes de enviarlos a la API
+        error_log('Origin: ' . $origin);
+        error_log('Destination: ' . $destination);
+        error_log('Departure Date: ' . $departure_date);
+        error_log('Return Date: ' . $return_date);
+    
         $flights = duffel_search_flights($origin, $destination, $departure_date, $return_date);
+    
 
         if (!empty($flights)) {
             echo '<div class="duffel-flights">';
@@ -152,4 +159,12 @@ function toggleReturnDateField() {
         returnDateGroup.style.display = 'none';
     }
 }
+
+document.querySelector('.duffel-search-form').addEventListener('submit', function(event) {
+    var tripType = document.getElementById('trip_type').value;
+    var returnDate = document.getElementById('return_date').value;
+    console.log('Tipo de Viaje:', tripType);
+    console.log('Fecha de Vuelta:', returnDate);
+});
+
 </script>
