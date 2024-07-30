@@ -52,13 +52,16 @@ if (!function_exists('duffel_search_flights')) {
         }
 
         $body = wp_remote_retrieve_body($response);
-        error_log('API Response Body: ' . $body);
+        error_log('API Response Body: ' . $body);  // Registro del cuerpo de la respuesta
         $result = json_decode($body, true);
 
         if ($result === null) {
             error_log('Error parsing JSON response: ' . json_last_error_msg());
             return ['error' => 'Error parsing JSON response: ' . json_last_error_msg(), 'response' => $body];
         }
+
+        // Verificar la respuesta de la API
+        error_log('API Response: ' . print_r($result, true));
 
         if (isset($result['data']['offers'])) {
             return $result['data']['offers'];
@@ -69,4 +72,4 @@ if (!function_exists('duffel_search_flights')) {
     }
 }
 
-?>
+

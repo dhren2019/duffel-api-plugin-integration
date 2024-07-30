@@ -39,7 +39,7 @@ function duffel_search_flights_shortcode($atts) {
                 
                 <div class="form-group">
                     <label for="trip_type">Tipo de Viaje:</label>
-                    <select name="trip_type" id="trip_type" onchange="toggleReturnDateField()">
+                    <select name="trip_type" id="trip_type">
                         <option value="oneway">Solo Ida</option>
                         <option value="return">Ida y Vuelta</option>
                     </select>
