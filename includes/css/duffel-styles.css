@@ -1,3 +1,4 @@
+/* Estilos generales para el formulario de búsqueda */
 .duffel-search-form {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -6,6 +7,7 @@
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
 
 .duffel-search-form .form-group {
@@ -43,6 +45,7 @@
     background: #0056b3;
 }
 
+/* Estilos para las tarjetas de los vuelos */
 .duffel-flights {
     max-width: 800px;
     margin: 20px auto;
@@ -50,13 +53,14 @@
 
 .flight {
     background: #fff;
-    padding: 15px;
+    padding: 20px;
     margin-bottom: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: grid;
-    grid-template-columns: 60px 1fr;
+    grid-template-columns: 1fr 2fr 1fr;
     gap: 20px;
+    align-items: center;
 }
 
 .flight img.airline-logo {
@@ -73,15 +77,19 @@
 .flight-details > div {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 10px;
 }
 
 .flight-details p {
     margin: 5px 0;
+    font-size: 14px;
+    color: #333;
 }
 
 .flight-price {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
+    color: #007bff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,8 +103,18 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    margin-top: 10px;
 }
 
 .flight-select button:hover {
     background: #0056b3;
+}
+
+/* Estilos adicionales para los pasos */
+.step {
+    display: none;
+}
+
+.step.active {
+    display: block;
 }
