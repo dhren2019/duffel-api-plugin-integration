@@ -74,15 +74,15 @@
     justify-content: center;
 }
 
-.flight-details > div {
+.flight-details .flight-times, .flight-details .flight-airports {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 10px;
 }
 
-.flight-details p {
-    margin: 5px 0;
-    font-size: 14px;
+.flight-details .flight-times span, .flight-details .flight-airports span {
+    font-size: 16px;
     color: #333;
 }
 

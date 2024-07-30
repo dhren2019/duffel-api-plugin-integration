@@ -24,6 +24,20 @@ document.addEventListener('DOMContentLoaded', function() {
         loadReturnFlights();
     });
 
+    function formatTime(dateTimeString) {
+        const date = new Date(dateTimeString);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDuration(duration) {
+        if (!duration) return 'N/A';
+        const match = duration.match(/PT(\d+H)?(\d+M)?/);
+        if (!match) return 'N/A';
+        const hours = match[1] ? match[1].replace('H', ' h ') : '';
+        const minutes = match[2] ? match[2].replace('M', ' m') : '';
+        return (hours + minutes).trim();
+    }
+
     function loadOutboundFlights() {
         var origin = document.getElementById('origin').value;
         var destination = document.getElementById('destination').value;
@@ -56,12 +70,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         flightDiv.innerHTML = `
                             <img class="airline-logo" src="${segment.operating_carrier.logo_symbol_url || 'default-logo.png'}" alt="${segment.operating_carrier.name || 'Logo'}">
                             <div class="flight-details">
-                                <p>Línea aérea: ${segment.operating_carrier.name || 'N/A'}</p>
-                                <p>Itinerario: ${slice.origin.iata_code} → ${slice.destination.iata_code}</p>
-                                <p>${segment.departing_at || 'N/A'} - ${segment.arriving_at || 'N/A'}</p>
-                                <p>Duración: ${slice.duration || 'N/A'}</p>
-                                <p>${slice.segments.length - 1} parada(s)</p>
-                                <p>Desde €${flight.total_amount || 'N/A'} ${flight.total_currency || ''}</p>
+                                <div class="flight-times">
+                                    <span>${formatTime(segment.departing_at)}</span>
+                                    <span>${formatDuration(slice.duration)}</span>
+                                    <span>${formatTime(segment.arriving_at)}</span>
+                                </div>
+                                <div class="flight-airports">
+                                    <span>${slice.origin.iata_code}</span>
+                                    <span>${slice.segments.length - 1 === 0 ? 'Directo' : `${slice.segments.length - 1} parada(s)`}</span>
+                                    <span>${slice.destination.iata_code}</span>
+                                </div>
+                                <div class="flight-price">
+                                    <p>Desde €${flight.total_amount || 'N/A'} ${flight.total_currency || ''}</p>
+                                </div>
                             </div>
                             <div class="flight-select">
                                 <button>Seleccionar</button>
@@ -113,12 +134,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         flightDiv.innerHTML = `
                             <img class="airline-logo" src="${segment.operating_carrier.logo_symbol_url || 'default-logo.png'}" alt="${segment.operating_carrier.name || 'Logo'}">
                             <div class="flight-details">
-                                <p>Línea aérea: ${segment.operating_carrier.name || 'N/A'}</p>
-                                <p>Itinerario: ${slice.origin.iata_code} → ${slice.destination.iata_code}</p>
-                                <p>${segment.departing_at || 'N/A'} - ${segment.arriving_at || 'N/A'}</p>
-                                <p>Duración: ${slice.duration || 'N/A'}</p>
-                                <p>${slice.segments.length - 1} parada(s)</p>
-                                <p>Desde €${flight.total_amount || 'N/A'} ${flight.total_currency || ''}</p>
+                                <div class="flight-times">
+                                    <span>${formatTime(segment.departing_at)}</span>
+                                    <span>${formatDuration(slice.duration)}</span>
+                                    <span>${formatTime(segment.arriving_at)}</span>
+                                </div>
+                                <div class="flight-airports">
+                                    <span>${slice.origin.iata_code}</span>
+                                    <span>${slice.segments.length - 1 === 0 ? 'Directo' : `${slice.segments.length - 1} parada(s)`}</span>
+                                    <span>${slice.destination.iata_code}</span>
+                                </div>
+                                <div class="flight-price">
+                                    <p>Desde €${flight.total_amount || 'N/A'} ${flight.total_currency || ''}</p>
+                                </div>
                             </div>
                             <div class="flight-select">
                                 <button>Seleccionar</button>
