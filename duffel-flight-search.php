@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Duffel API Integration
  * Description: Integración con la API de Duffel para buscar vuelos.
- * Version: 1.0
- * Author: TuNombre
+ * Version: 1.1
+ * Author: Dhren
  */
 
 if (!defined('ABSPATH')) {
@@ -22,81 +22,76 @@ function duffel_search_flights_enqueue_assets() {
     wp_enqueue_style('duffel-styles', plugin_dir_url(__FILE__) . 'includes/css/duffel-styles.css');
     wp_enqueue_script('duffel-scripts', plugin_dir_url(__FILE__) . 'includes/js/duffel-scripts.js', array('jquery'), null, true);
     wp_localize_script('duffel-scripts', 'ajaxurl', admin_url('admin-ajax.php'));
-    
-    // Añade este script en línea para verificar la carga del archivo CSS
-    wp_add_inline_script('duffel-scripts', 'console.log("CSS de Duffel cargado correctamente.");');
 }
 add_action('wp_enqueue_scripts', 'duffel_search_flights_enqueue_assets');
-
 
 // Definir el shortcode
 function duffel_search_flights_shortcode($atts) {
     ob_start();
     ?>
- <div id="duffel-flight-search">
-    <!-- Paso 1: Selección del tipo de viaje -->
-    <div id="step-1" class="step active">
-        <h2>Selecciona el tipo de viaje</h2>
-        <form id="search-form" class="duffel-search-form" method="POST">
-            <!-- Campos del formulario existentes -->
-            <?php wp_nonce_field('duffel_search_flights_action', 'duffel_search_flights_nonce'); ?>
-            
-            <div class="form-group">
-                <label for="trip_type">Tipo de Viaje:</label>
-                <select name="trip_type" id="trip_type">
-                    <option value="oneway">Solo Ida</option>
-                    <option value="return">Ida y Vuelta</option>
-                </select>
-            </div>
+    <div id="duffel-flight-search">
+        <!-- Paso 1: Selección del tipo de viaje -->
+        <div id="step-1" class="step active">
+            <h2>Selecciona el tipo de viaje</h2>
+            <form id="search-form" method="POST">
+                <!-- Campos del formulario existentes -->
+                <?php wp_nonce_field('duffel_search_flights_action', 'duffel_search_flights_nonce'); ?>
+                
+                <div class="form-group">
+                    <label for="trip_type">Tipo de Viaje:</label>
+                    <select name="trip_type" id="trip_type">
+                        <option value="oneway">Solo Ida</option>
+                        <option value="return">Ida y Vuelta</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label for="origin">Origen:</label>
-                <input type="text" name="origin" id="origin" placeholder="LHR (London Heathrow) o Londres" required>
-            </div>
+                <div class="form-group">
+                    <label for="origin">Origen:</label>
+                    <input type="text" name="origin" id="origin" placeholder="LHR (London Heathrow) o Londres" required>
+                </div>
 
-            <div class="form-group">
-                <label for="destination">Destino:</label>
-                <input type="text" name="destination" id="destination" placeholder="JFK (John F Kennedy) o Nueva York" required>
-            </div>
+                <div class="form-group">
+                    <label for="destination">Destino:</label>
+                    <input type="text" name="destination" id="destination" placeholder="JFK (John F Kennedy) o Nueva York" required>
+                </div>
 
-            <div class="form-group">
-                <label for="departure_date">Fecha Ida:</label>
-                <input type="date" name="departure_date" id="departure_date" required>
-            </div>
+                <div class="form-group">
+                    <label for="departure_date">Fecha Ida:</label>
+                    <input type="date" name="departure_date" id="departure_date" required>
+                </div>
 
-            <div class="form-group return-date-group" id="return-date-group" style="display: none;">
-                <label for="return_date">Fecha Vuelta:</label>
-                <input type="date" name="return_date" id="return_date">
-            </div>
+                <div class="form-group return-date-group" id="return-date-group" style="display: none;">
+                    <label for="return_date">Fecha Vuelta:</label>
+                    <input type="date" name="return_date" id="return_date">
+                </div>
 
-            <div class="form-group">
-                <label for="passengers">Pasajeros:</label>
-                <input type="number" name="passengers" id="passengers" value="1" min="1">
-            </div>
+                <div class="form-group">
+                    <label for="passengers">Pasajeros:</label>
+                    <input type="number" name="passengers" id="passengers" value="1" min="1">
+                </div>
 
-            <button type="button" id="next-to-step-2">Buscar Vuelos</button>
-        </form>
-    </div>
-
-    <!-- Paso 2: Selección del vuelo de ida -->
-    <div id="step-2" class="step">
-        <h2>Selecciona tu vuelo de ida</h2>
-        <div id="outbound-flights">
-            <!-- Aquí se cargarán las tarjetas de los vuelos de ida -->
+                <button type="button" id="next-to-step-2">Siguiente</button>
+            </form>
         </div>
-        <button type="button" id="next-to-step-3" style="display:none;">Siguiente</button>
-    </div>
 
-    <!-- Paso 3: Selección del vuelo de vuelta -->
-    <div id="step-3" class="step">
-        <h2>Selecciona tu vuelo de vuelta</h2>
-        <div id="return-flights">
-            <!-- Aquí se cargarán las tarjetas de los vuelos de vuelta -->
+        <!-- Paso 2: Selección del vuelo de ida -->
+        <div id="step-2" class="step">
+            <h2>Selecciona tu vuelo de ida</h2>
+            <div id="outbound-flights">
+                <!-- Aquí se cargarán las tarjetas de los vuelos de ida -->
+            </div>
+            <button type="button" id="next-to-step-3" style="display:none;">Siguiente</button>
         </div>
-        <button type="submit" id="submit-form">Enviar</button>
-    </div>
-</div>
 
+        <!-- Paso 3: Selección del vuelo de vuelta -->
+        <div id="step-3" class="step">
+            <h2>Selecciona tu vuelo de vuelta</h2>
+            <div id="return-flights">
+                <!-- Aquí se cargarán las tarjetas de los vuelos de vuelta -->
+            </div>
+            <button type="submit" id="submit-form">Enviar</button>
+        </div>
+    </div>
     <?php return ob_get_clean();
 }
 add_shortcode('duffel_search_flights', 'duffel_search_flights_shortcode');
@@ -124,4 +119,62 @@ function duffel_search_flights_ajax_handler() {
         wp_send_json([]);
     }
 }
-?>
+
+// Función para crear un producto dinámico en WooCommerce
+function create_flight_product($flight_details) {
+    // Verificar si el producto ya existe para evitar duplicados
+    $product_name = 'Vuelo ' . $flight_details['flight_number'];
+    $existing_product_id = wc_get_product_id_by_sku($flight_details['flight_number']);
+    
+    if (!$existing_product_id) {
+        // Crear un nuevo producto
+        $product = new WC_Product_Simple();
+        $product->set_name($product_name);
+        $product->set_regular_price($flight_details['price']);
+        $product->set_sku($flight_details['flight_number']); // SKU único basado en el número de vuelo
+        $product->set_description($flight_details['description']);
+        $product->set_virtual(true); // Producto virtual
+        $product->save();
+
+        return $product->get_id();
+    }
+
+    return $existing_product_id;
+}
+
+// Función para manejar la solicitud AJAX para añadir el vuelo al carrito
+function add_flight_to_cart() {
+    if (!isset($_POST['flight_details'])) {
+        wp_send_json_error('Detalles del vuelo faltantes.');
+    }
+
+    $flight_details = $_POST['flight_details'];
+
+    // Si es un vuelo de ida y vuelta, manejamos ambos vuelos
+    if (isset($flight_details['outbound']) && isset($flight_details['return'])) {
+        $outbound_flight = $flight_details['outbound'];
+        $return_flight = $flight_details['return'];
+
+        $outbound_product_id = create_flight_product($outbound_flight);
+        $return_product_id = create_flight_product($return_flight);
+
+        if ($outbound_product_id && $return_product_id) {
+            WC()->cart->add_to_cart($outbound_product_id);
+            WC()->cart->add_to_cart($return_product_id);
+            wp_send_json_success('Vuelos añadidos al carrito.');
+        } else {
+            wp_send_json_error('Error al crear los productos.');
+        }
+    } else {
+        $product_id = create_flight_product($flight_details);
+
+        if ($product_id) {
+            WC()->cart->add_to_cart($product_id);
+            wp_send_json_success('Vuelo añadido al carrito.');
+        } else {
+            wp_send_json_error('Error al crear el producto.');
+        }
+    }
+}
+add_action('wp_ajax_add_flight_to_cart', 'add_flight_to_cart');
+add_action('wp_ajax_nopriv_add_flight_to_cart', 'add_flight_to_cart');

@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+    var selectedOutboundFlight = null;
+
     function toggleReturnDateField() {
         var tripType = document.getElementById('trip_type').value;
         var returnDateGroup = document.getElementById('return-date-group');
@@ -36,6 +38,49 @@ document.addEventListener('DOMContentLoaded', function() {
         const hours = match[1] ? match[1].replace('H', ' h ') : '';
         const minutes = match[2] ? match[2].replace('M', ' m') : '';
         return (hours + minutes).trim();
+    }
+
+    function addToCartAndCheckout(flightDetails) {
+        fetch(ajaxurl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'add_flight_to_cart',
+                flight_details: flightDetails
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/checkout'; // Redirigir al checkout de WooCommerce
+            } else {
+                alert('Error al añadir el vuelo al carrito.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al procesar la solicitud.');
+        });
+    }
+
+    function handleFlightSelection(flightDetails) {
+        var tripType = document.getElementById('trip_type').value;
+
+        if (tripType === 'oneway') {
+            addToCartAndCheckout(flightDetails);
+        } else if (tripType === 'return') {
+            if (!selectedOutboundFlight) {
+                selectedOutboundFlight = flightDetails;
+                document.getElementById('step-2').style.display = 'none';
+                document.getElementById('step-3').style.display = 'block';
+                loadReturnFlights();
+            } else {
+                addToCartAndCheckout({ 
+                    outbound: selectedOutboundFlight, 
+                    return: flightDetails 
+                });
+            }
+        }
     }
 
     function loadOutboundFlights() {
@@ -85,7 +130,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
                             <div class="flight-select">
-                                <button>Seleccionar</button>
+                                <button 
+                                    data-flight-number="${flight.flight_number}"
+                                    data-price="${flight.total_amount}"
+                                    data-description="Vuelo de ${slice.origin.iata_code} a ${slice.destination.iata_code} el ${formatTime(segment.departing_at)}"
+                                >
+                                    Seleccionar
+                                </button>
                             </div>
                         `;
                         outboundFlightsContainer.appendChild(flightDiv);
@@ -149,7 +200,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
                             <div class="flight-select">
-                                <button>Seleccionar</button>
+                                <button 
+                                    data-flight-number="${flight.flight_number}"
+                                    data-price="${flight.total_amount}"
+                                    data-description="Vuelo de ${slice.origin.iata_code} a ${slice.destination.iata_code} el ${formatTime(segment.departing_at)}"
+                                >
+                                    Seleccionar
+                                </button>
                             </div>
                         `;
                         returnFlightsContainer.appendChild(flightDiv);
@@ -163,4 +220,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('return-flights').innerHTML = '<p>Error loading return flights. Please try again.</p>';
             });
     }
+
+    document.querySelectorAll('.flight-select button').forEach(button => {
+        button.addEventListener('click', function() {
+            var flightDetails = {
+                flight_number: this.dataset.flightNumber,
+                price: this.dataset.price,
+                description: this.dataset.description
+            };
+            handleFlightSelection(flightDetails);
+        });
+    });
 });
