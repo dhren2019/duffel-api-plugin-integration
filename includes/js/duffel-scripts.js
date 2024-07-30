@@ -54,10 +54,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         var flightDiv = document.createElement('div');
                         flightDiv.classList.add('flight');
                         flightDiv.innerHTML = `
-                            <img class="airline-logo" src="${segment.operating_carrier.logo_url || ''}" alt="${segment.operating_carrier.name || 'Logo'}">
+                            <img class="airline-logo" src="${segment.operating_carrier.logo_symbol_url || 'default-logo.png'}" alt="${segment.operating_carrier.name || 'Logo'}">
                             <div class="flight-details">
                                 <p>Línea aérea: ${segment.operating_carrier.name || 'N/A'}</p>
-                                <p>Itinerario: ${slice.origin || 'N/A'} → ${slice.destination || 'N/A'}</p>
+                                <p>Itinerario: ${slice.origin.iata_code} → ${slice.destination.iata_code}</p>
                                 <p>${segment.departing_at || 'N/A'} - ${segment.arriving_at || 'N/A'}</p>
                                 <p>Duración: ${slice.duration || 'N/A'}</p>
                                 <p>${slice.segments.length - 1} parada(s)</p>
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (data.length > 0) {
                     data.forEach(flight => {
-                        var slice = flight.slices && flight.slices[0]; // Cambiado el índice a [0]
+                        var slice = flight.slices && flight.slices[0];
                         if (!slice || !slice.segments || slice.segments.length === 0) {
                             console.error('Invalid slice data:', slice);
                             return;
@@ -111,10 +111,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         var flightDiv = document.createElement('div');
                         flightDiv.classList.add('flight');
                         flightDiv.innerHTML = `
-                            <img class="airline-logo" src="${segment.operating_carrier.logo_url || ''}" alt="${segment.operating_carrier.name || 'Logo'}">
+                            <img class="airline-logo" src="${segment.operating_carrier.logo_symbol_url || 'default-logo.png'}" alt="${segment.operating_carrier.name || 'Logo'}">
                             <div class="flight-details">
                                 <p>Línea aérea: ${segment.operating_carrier.name || 'N/A'}</p>
-                                <p>Itinerario: ${slice.origin || 'N/A'} → ${slice.destination || 'N/A'}</p>
+                                <p>Itinerario: ${slice.origin.iata_code} → ${slice.destination.iata_code}</p>
                                 <p>${segment.departing_at || 'N/A'} - ${segment.arriving_at || 'N/A'}</p>
                                 <p>Duración: ${slice.duration || 'N/A'}</p>
                                 <p>${slice.segments.length - 1} parada(s)</p>
