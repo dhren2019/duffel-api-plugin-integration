@@ -4,11 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleReturnDateField() {
         var tripType = document.getElementById('trip_type').value;
         var returnDateGroup = document.getElementById('return-date-group');
-        if (tripType === 'return') {
-            returnDateGroup.style.display = 'block';
-        } else {
-            returnDateGroup.style.display = 'none';
-        }
+        returnDateGroup.style.display = tripType === 'return' ? 'block' : 'none';
     }
 
     document.getElementById('trip_type').addEventListener('change', toggleReturnDateField);
@@ -18,12 +14,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('step-1').style.display = 'none';
         document.getElementById('step-2').style.display = 'block';
         loadOutboundFlights();
-    });
-
-    document.getElementById('next-to-step-3').addEventListener('click', function() {
-        document.getElementById('step-2').style.display = 'none';
-        document.getElementById('step-3').style.display = 'block';
-        loadReturnFlights();
     });
 
     function formatTime(dateTimeString) {
@@ -91,14 +81,13 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`${ajaxurl}?action=duffel_search_flights&origin=${origin}&destination=${destination}&departure_date=${departureDate}`)
             .then(response => response.json())
             .then(data => {
-                console.log('API Response Data:', data);  // Registrar la respuesta completa de la API
+                console.log('API Response Data:', data);
                 var outboundFlightsContainer = document.getElementById('outbound-flights');
                 outboundFlightsContainer.innerHTML = '';
 
                 if (data.error) {
                     console.error('Error from API:', data.error);
-                    console.error('Raw response:', data.response);
-                    outboundFlightsContainer.innerHTML = `<p>Error loading outbound flights. ${data.error}</p><pre>${data.response}</pre>`;
+                    outboundFlightsContainer.innerHTML = `<p>Error loading outbound flights. ${data.error}</p>`;
                     return;
                 }
 
@@ -139,6 +128,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </button>
                             </div>
                         `;
+                        flightDiv.querySelector('.flight-select button').addEventListener('click', function() {
+                            var flightDetails = {
+                                flight_number: this.dataset.flightNumber,
+                                price: this.dataset.price,
+                                description: this.dataset.description
+                            };
+                            handleFlightSelection(flightDetails);
+                        });
                         outboundFlightsContainer.appendChild(flightDiv);
                     });
 
@@ -161,14 +158,13 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`${ajaxurl}?action=duffel_search_flights&origin=${destination}&destination=${origin}&departure_date=${returnDate}`)
             .then(response => response.json())
             .then(data => {
-                console.log('API Response Data:', data);  // Registrar la respuesta completa de la API
+                console.log('API Response Data:', data);
                 var returnFlightsContainer = document.getElementById('return-flights');
                 returnFlightsContainer.innerHTML = '';
 
                 if (data.error) {
                     console.error('Error from API:', data.error);
-                    console.error('Raw response:', data.response);
-                    returnFlightsContainer.innerHTML = `<p>Error loading return flights. ${data.error}</p><pre>${data.response}</pre>`;
+                    returnFlightsContainer.innerHTML = `<p>Error loading return flights. ${data.error}</p>`;
                     return;
                 }
 
@@ -209,6 +205,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </button>
                             </div>
                         `;
+                        flightDiv.querySelector('.flight-select button').addEventListener('click', function() {
+                            var flightDetails = {
+                                flight_number: this.dataset.flightNumber,
+                                price: this.dataset.price,
+                                description: this.dataset.description
+                            };
+                            handleFlightSelection(flightDetails);
+                        });
                         returnFlightsContainer.appendChild(flightDiv);
                     });
                 } else {
@@ -220,15 +224,4 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('return-flights').innerHTML = '<p>Error loading return flights. Please try again.</p>';
             });
     }
-
-    document.querySelectorAll('.flight-select button').forEach(button => {
-        button.addEventListener('click', function() {
-            var flightDetails = {
-                flight_number: this.dataset.flightNumber,
-                price: this.dataset.price,
-                description: this.dataset.description
-            };
-            handleFlightSelection(flightDetails);
-        });
-    });
 });
