@@ -33,7 +33,7 @@ function duffel_search_flights_shortcode($atts) {
         <!-- Paso 1: Selección del tipo de viaje -->
         <div id="step-1" class="step active">
             <h2>Selecciona el tipo de viaje</h2>
-            <form id="search-form" method="POST">
+            <form id="search-form" class="duffel-search-form" method="POST">
                 <!-- Campos del formulario existentes -->
                 <?php wp_nonce_field('duffel_search_flights_action', 'duffel_search_flights_nonce'); ?>
                 
@@ -77,7 +77,7 @@ function duffel_search_flights_shortcode($atts) {
         <!-- Paso 2: Selección del vuelo de ida -->
         <div id="step-2" class="step">
             <h2>Selecciona tu vuelo de ida</h2>
-            <div id="outbound-flights">
+            <div id="outbound-flights" class="duffel-flights">
                 <!-- Aquí se cargarán las tarjetas de los vuelos de ida -->
             </div>
             <button type="button" id="next-to-step-3" style="display:none;">Siguiente</button>
@@ -86,7 +86,7 @@ function duffel_search_flights_shortcode($atts) {
         <!-- Paso 3: Selección del vuelo de vuelta -->
         <div id="step-3" class="step">
             <h2>Selecciona tu vuelo de vuelta</h2>
-            <div id="return-flights">
+            <div id="return-flights" class="duffel-flights">
                 <!-- Aquí se cargarán las tarjetas de los vuelos de vuelta -->
             </div>
             <button type="submit" id="submit-form">Enviar</button>
