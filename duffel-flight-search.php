@@ -123,10 +123,18 @@
  }
  
  // Función para manejar la solicitud AJAX y añadir vuelos al carrito
- function add_flight_to_cart() {
+// Añadir acciones AJAX
+add_action('wp_ajax_add_flight_to_cart', 'add_flight_to_cart');
+add_action('wp_ajax_nopriv_add_flight_to_cart', 'add_flight_to_cart');
+
+function add_flight_to_cart() {
     $input = json_decode(file_get_contents('php://input'), true);
+    
+    // Registrar la entrada para depuración
+    error_log('Received input: ' . print_r($input, true));
 
     if (!isset($input['flight_details'])) {
+        error_log('Detalles del vuelo faltantes.');
         wp_send_json_error('Detalles del vuelo faltantes.');
         return;
     }
@@ -145,6 +153,7 @@
             WC()->cart->add_to_cart($return_product_id);
             wp_send_json_success('Vuelos añadidos al carrito.');
         } else {
+            error_log('Error al crear los productos.');
             wp_send_json_error('Error al crear los productos.');
         }
     } else {
@@ -154,13 +163,11 @@
             WC()->cart->add_to_cart($product_id);
             wp_send_json_success('Vuelo añadido al carrito.');
         } else {
+            error_log('Error al crear el producto.');
             wp_send_json_error('Error al crear el producto.');
         }
     }
 }
-add_action('wp_ajax_add_flight_to_cart', 'add_flight_to_cart');
-add_action('wp_ajax_nopriv_add_flight_to_cart', 'add_flight_to_cart');
-
 
  
  // Shortcode para mostrar el formulario de búsqueda de vuelos

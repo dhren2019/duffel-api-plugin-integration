@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function addToCartAndCheckout(flightDetails) {
+        console.log('Sending flight details:', flightDetails); // Log para depuración
         fetch(ajaxurl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -39,11 +40,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 flight_details: flightDetails
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 window.location.href = '/checkout'; // Redirigir al checkout de WooCommerce
             } else {
+                console.error('Error response from server:', data);
                 alert('Error al añadir el vuelo al carrito.');
             }
         })
@@ -51,8 +58,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Error al procesar la solicitud.');
         });
-    }
-
+    }    
+    
     function handleFlightSelection(flightDetails) {
         var tripType = document.getElementById('trip_type').value;
 
