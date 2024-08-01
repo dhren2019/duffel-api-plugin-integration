@@ -124,15 +124,21 @@
  
  // Función para manejar la solicitud AJAX y añadir vuelos al carrito
 // Añadir acciones AJAX
-add_action('wp_ajax_add_flight_to_cart', 'add_flight_to_cart');
-add_action('wp_ajax_nopriv_add_flight_to_cart', 'add_flight_to_cart');
-
 function add_flight_to_cart() {
+    // Leer el cuerpo de la solicitud
     $input = json_decode(file_get_contents('php://input'), true);
     
-    // Registrar la entrada para depuración
+    // Registro de depuración para la entrada recibida
     error_log('Received input: ' . print_r($input, true));
 
+    // Verificar si hay errores de decodificación JSON
+    if ($input === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log('JSON decode error: ' . json_last_error_msg());
+        wp_send_json_error('Error al decodificar JSON.');
+        return;
+    }
+
+    // Verificar si los detalles del vuelo están presentes
     if (!isset($input['flight_details'])) {
         error_log('Detalles del vuelo faltantes.');
         wp_send_json_error('Detalles del vuelo faltantes.');
@@ -140,8 +146,10 @@ function add_flight_to_cart() {
     }
 
     $flight_details = $input['flight_details'];
+    error_log('Flight details: ' . print_r($flight_details, true));
 
     if (isset($flight_details['outbound']) && isset($flight_details['return'])) {
+        error_log('Handling return flight');
         $outbound_flight = $flight_details['outbound'];
         $return_flight = $flight_details['return'];
 
@@ -157,6 +165,7 @@ function add_flight_to_cart() {
             wp_send_json_error('Error al crear los productos.');
         }
     } else {
+        error_log('Handling one way flight');
         $product_id = create_flight_product($flight_details);
 
         if ($product_id) {
@@ -168,6 +177,10 @@ function add_flight_to_cart() {
         }
     }
 }
+
+// Registrar las acciones AJAX
+add_action('wp_ajax_add_flight_to_cart', 'add_flight_to_cart');
+add_action('wp_ajax_nopriv_add_flight_to_cart', 'add_flight_to_cart');
 
  
  // Shortcode para mostrar el formulario de búsqueda de vuelos

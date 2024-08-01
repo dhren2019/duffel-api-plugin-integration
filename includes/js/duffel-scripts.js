@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
         })
         .then(response => {
+            console.log('Response status:', response.status);
             if (!response.ok) {
                 return response.json().then(err => { throw err; });
             }
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             if (data.success) {
-                window.location.href = '/checkout'; // Redirigir al checkout de WooCommerce
+                window.location.href = '/cart'; // Redirigir al checkout de WooCommerce
             } else {
                 console.error('Error response from server:', data);
                 alert('Error al añadir el vuelo al carrito.');
@@ -58,8 +59,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Error al procesar la solicitud.');
         });
-    }    
+    }
     
+
     function handleFlightSelection(flightDetails) {
         var tripType = document.getElementById('trip_type').value;
 
@@ -127,8 +129,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="flight-select">
                                 <button 
-                                    data-flight-number="${flight.flight_number}"
-                                    data-price="${flight.total_amount}"
+                                    data-flight-number="${segment.operating_carrier_flight_number || 'undefined'}"
+                                    data-price="${flight.total_amount || 'undefined'}"
                                     data-description="Vuelo de ${slice.origin.iata_code} a ${slice.destination.iata_code} el ${formatTime(segment.departing_at)}"
                                 >
                                     Seleccionar
@@ -141,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 price: this.dataset.price,
                                 description: this.dataset.description
                             };
+                            console.log('Flight details:', flightDetails); // Log para depuración
                             handleFlightSelection(flightDetails);
                         });
                         outboundFlightsContainer.appendChild(flightDiv);
@@ -204,8 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="flight-select">
                                 <button 
-                                    data-flight-number="${flight.flight_number}"
-                                    data-price="${flight.total_amount}"
+                                    data-flight-number="${segment.operating_carrier_flight_number || 'undefined'}"
+                                    data-price="${flight.total_amount || 'undefined'}"
                                     data-description="Vuelo de ${slice.origin.iata_code} a ${slice.destination.iata_code} el ${formatTime(segment.departing_at)}"
                                 >
                                     Seleccionar
@@ -218,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 price: this.dataset.price,
                                 description: this.dataset.description
                             };
+                            console.log('Flight details:', flightDetails); // Log para depuración
                             handleFlightSelection(flightDetails);
                         });
                         returnFlightsContainer.appendChild(flightDiv);
