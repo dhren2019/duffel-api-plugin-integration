@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             if (data.success) {
-                window.location.href = '/cart'; // Redirigir al checkout de WooCommerce
+                window.location.href = '/checkout'; // Redirigir al checkout de WooCommerce
             } else {
                 console.error('Error response from server:', data);
                 alert('Error al añadir el vuelo al carrito.');
@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error al procesar la solicitud.');
         });
     }
-    
 
     function handleFlightSelection(flightDetails) {
         var tripType = document.getElementById('trip_type').value;

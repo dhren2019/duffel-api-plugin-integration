@@ -125,20 +125,16 @@
  // Función para manejar la solicitud AJAX y añadir vuelos al carrito
 // Añadir acciones AJAX
 function add_flight_to_cart() {
-    // Leer el cuerpo de la solicitud
     $input = json_decode(file_get_contents('php://input'), true);
-    
-    // Registro de depuración para la entrada recibida
+
     error_log('Received input: ' . print_r($input, true));
 
-    // Verificar si hay errores de decodificación JSON
     if ($input === null && json_last_error() !== JSON_ERROR_NONE) {
         error_log('JSON decode error: ' . json_last_error_msg());
         wp_send_json_error('Error al decodificar JSON.');
         return;
     }
 
-    // Verificar si los detalles del vuelo están presentes
     if (!isset($input['flight_details'])) {
         error_log('Detalles del vuelo faltantes.');
         wp_send_json_error('Detalles del vuelo faltantes.');
@@ -178,11 +174,9 @@ function add_flight_to_cart() {
     }
 }
 
-// Registrar las acciones AJAX
 add_action('wp_ajax_add_flight_to_cart', 'add_flight_to_cart');
 add_action('wp_ajax_nopriv_add_flight_to_cart', 'add_flight_to_cart');
 
- 
  // Shortcode para mostrar el formulario de búsqueda de vuelos
  function duffel_search_flights_shortcode($atts) {
      ob_start();
@@ -260,7 +254,8 @@ add_action('wp_ajax_nopriv_add_flight_to_cart', 'add_flight_to_cart');
      wp_enqueue_script('duffel-scripts', plugin_dir_url(__FILE__) . 'includes/js/duffel-scripts.js', array('jquery'), null, true);
      wp_localize_script('duffel-scripts', 'ajaxurl', admin_url('admin-ajax.php'));
  }
- add_action('wp_enqueue_scripts', 'duffel_search_flights_enqueue_assets');
+ 
+ 
  
  ?>
  
