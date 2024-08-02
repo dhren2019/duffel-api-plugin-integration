@@ -181,6 +181,7 @@ function duffel_search_flights_shortcode($atts) {
 }
 add_shortcode('duffel_search_flights', 'duffel_search_flights_shortcode');
 
+
 // Encolar el archivo CSS y JS
 function duffel_search_flights_enqueue_assets() {
     wp_enqueue_style('duffel-styles', plugin_dir_url(__FILE__) . 'includes/css/duffel-styles.css');

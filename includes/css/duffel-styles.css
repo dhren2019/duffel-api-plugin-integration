@@ -118,3 +118,38 @@
 .step.active {
     display: block;
 }
+
+/* Estilos para el resumen del itinerario */
+.duffel-itinerary-summary {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.itinerary-outbound, .itinerary-return {
+    margin-bottom: 20px;
+}
+
+.itinerary-total {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+}
+
+#go-to-checkout {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#go-to-checkout:hover {
+    background: #0056b3;
+}
