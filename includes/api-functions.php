@@ -72,21 +72,6 @@ if (!function_exists('duffel_search_flights')) {
     }
 }
 
- // Verificar que WooCommerce está activo y las funciones están disponibles
- function verificar_woocommerce_funciona() {
-    if ( class_exists( 'WooCommerce' ) ) {
-        error_log('WooCommerce está activo');
-        if ( method_exists( WC()->cart, 'add_to_cart' ) ) {
-            error_log('La función add_to_cart está disponible');
-        } else {
-            error_log('La función add_to_cart no está disponible');
-        }
-    } else {
-        error_log('WooCommerce no está activo');
-    }
-}
-add_action('wp_loaded', 'verificar_woocommerce_funciona');
-
 // Manejador de prueba para AJAX
 function test_ajax_handler() {
     wp_send_json_success('AJAX funciona correctamente');

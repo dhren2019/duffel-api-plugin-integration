@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     var selectedOutboundFlight = null;
+    var selectedReturnFlight = null;
 
     function toggleReturnDateField() {
         var tripType = document.getElementById('trip_type').value;
@@ -30,42 +31,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return (hours + minutes).trim();
     }
 
-    function addToCartAndCheckout(flightDetails) {
-        console.log('Sending flight details:', flightDetails); // Log para depuración
-        fetch(ajaxurl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'add_flight_to_cart',
-                flight_details: flightDetails
-            })
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            if (!response.ok) {
-                return response.json().then(err => { throw err; });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                window.location.href = '/checkout'; // Redirigir al checkout de WooCommerce
-            } else {
-                console.error('Error response from server:', data);
-                alert('Error al añadir el vuelo al carrito.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al procesar la solicitud.');
-        });
-    }
-
     function handleFlightSelection(flightDetails) {
         var tripType = document.getElementById('trip_type').value;
 
         if (tripType === 'oneway') {
-            addToCartAndCheckout(flightDetails);
+            selectedOutboundFlight = flightDetails;
+            showItinerarySummary();
         } else if (tripType === 'return') {
             if (!selectedOutboundFlight) {
                 selectedOutboundFlight = flightDetails;
@@ -73,13 +44,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('step-3').style.display = 'block';
                 loadReturnFlights();
             } else {
-                addToCartAndCheckout({ 
-                    outbound: selectedOutboundFlight, 
-                    return: flightDetails 
-                });
+                selectedReturnFlight = flightDetails;
+                showItinerarySummary();
             }
         }
     }
+
+    function showItinerarySummary() {
+        var itinerarySummaryContainer = document.getElementById('itinerary-summary');
+        itinerarySummaryContainer.innerHTML = '';
+
+        if (selectedOutboundFlight) {
+            itinerarySummaryContainer.innerHTML += `
+                <div class="itinerary-outbound">
+                    <h3>Vuelo de Ida</h3>
+                    <p>${selectedOutboundFlight.description}</p>
+                    <p>Precio: €${selectedOutboundFlight.price}</p>
+                </div>
+            `;
+        }
+
+        if (selectedReturnFlight) {
+            itinerarySummaryContainer.innerHTML += `
+                <div class="itinerary-return">
+                    <h3>Vuelo de Vuelta</h3>
+                    <p>${selectedReturnFlight.description}</p>
+                    <p>Precio: €${selectedReturnFlight.price}</p>
+                </div>
+            `;
+        }
+
+        var totalAmount = parseFloat(selectedOutboundFlight.price) + (selectedReturnFlight ? parseFloat(selectedReturnFlight.price) : 0);
+        itinerarySummaryContainer.innerHTML += `
+            <div class="itinerary-total">
+                <h3>Total</h3>
+                <p>€${totalAmount.toFixed(2)}</p>
+            </div>
+        `;
+
+        document.getElementById('step-2').style.display = 'none';
+        document.getElementById('step-3').style.display = 'none';
+        document.getElementById('step-4').style.display = 'block';
+    }
+
+    document.getElementById('go-to-checkout').addEventListener('click', function() {
+        // Aquí puedes añadir la lógica para redirigir a la página de checkout
+        window.location.href = 'checkout-page-url'; // Reemplaza 'checkout-page-url' con la URL de tu página de checkout
+    });
 
     function loadOutboundFlights() {
         var origin = document.getElementById('origin').value;
