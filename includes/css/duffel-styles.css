@@ -119,37 +119,168 @@
     display: block;
 }
 
-/* Estilos para el resumen del itinerario */
-.duffel-itinerary-summary {
-    max-width: 800px;
-    margin: 20px auto;
-    background: #fff;
+/* Contenedor del Resumen del Itinerario */
+#itinerary-summary-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin: 30px auto;
+    max-width: 1200px;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #f8f9fb;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.itinerary-outbound, .itinerary-return {
+/* Detalles del Itinerario */
+.duffel-itinerary-details {
+    width: 65%;
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Secciones del Vuelo de Ida y Vuelta */
+.itinerary-outbound,
+.itinerary-return {
+    background-color: #e7f3ff;
+    padding: 20px;
+    border-radius: 8px;
     margin-bottom: 20px;
+    position: relative;
+}
+
+.itinerary-outbound::before {
+    content: 'Vuelo de Ida';
+    font-weight: bold;
+    font-size: 18px;
+    color: #007bff;
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background-color: #e7f3ff;
+    padding: 5px 10px;
+    border-radius: 0 0 8px 8px;
+}
+
+.itinerary-return::before {
+    content: 'Vuelo de Vuelta';
+    font-weight: bold;
+    font-size: 18px;
+    color: #28a745;
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background-color: #e7f3ff;
+    padding: 5px 10px;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Información de Vuelo */
+.itinerary-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.itinerary-item img.airline-logo {
+    max-width: 50px;
+    margin-right: 15px;
+}
+
+.itinerary-item .flight-info {
+    flex-grow: 1;
+}
+
+.itinerary-item .flight-info h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.itinerary-item .flight-info p {
+    margin: 8px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.itinerary-item .icon {
+    margin: 0 15px;
+    font-size: 24px;
+    color: #007bff;
+}
+
+.itinerary-item .flight-time {
+    display: flex;
+    align-items: center;
+}
+
+.itinerary-item .flight-time .icon {
+    margin-right: 10px;
+}
+
+.itinerary-item .flight-airport {
+    display: flex;
+    align-items: center;
+}
+
+.itinerary-item .flight-airport .icon {
+    margin-right: 10px;
+}
+
+/* Resumen de Precio */
+.duffel-itinerary-summary {
+    width: 30%;
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 20px;
+}
+
+.summary-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #007bff;
+    text-align: center;
+}
+
+.summary-item {
+    margin-bottom: 15px;
+}
+
+.summary-item p {
+    margin: 8px 0;
+    color: #555;
+    font-size: 16px;
 }
 
 .itinerary-total {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: bold;
     text-align: right;
+    margin-top: 30px;
+    color: #007bff;
 }
 
+/* Botón de Checkout */
 #go-to-checkout {
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 12px 20px;
+    font-size: 18px;
     color: #fff;
-    background: #007bff;
+    background: #28a745;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 15px;
+    width: 100%;
+    text-align: center;
+    transition: background 0.3s;
 }
 
 #go-to-checkout:hover {
-    background: #0056b3;
+    background: #218838;
 }

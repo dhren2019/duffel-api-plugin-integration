@@ -169,17 +169,26 @@ function duffel_search_flights_shortcode($atts) {
 
         <!-- Paso 4: Resumen del itinerario -->
         <div id="step-4" class="step">
-            <h2>Resumen del Itinerario</h2>
-            <div id="itinerary-summary" class="duffel-itinerary-summary">
-                <!-- Aquí se mostrará el resumen del itinerario -->
+            <div id="itinerary-summary-container">
+                <div class="duffel-itinerary-details">
+                    <div id="itinerary-summary">
+                        <!-- Aquí se mostrará el resumen del itinerario -->
+                    </div>
+                </div>
+                <div class="duffel-itinerary-summary">
+                    <div id="summary-details">
+                        <!-- Aquí se mostrarán los detalles del resumen -->
+                    </div>
+                    <button type="button" id="go-to-checkout">Ir al Checkout</button>
+                </div>
             </div>
-            <button type="button" id="go-to-checkout">Ir al Checkout</button>
         </div>
     </div>
     <?php 
     return ob_get_clean();
 }
 add_shortcode('duffel_search_flights', 'duffel_search_flights_shortcode');
+
 
 
 // Encolar el archivo CSS y JS
@@ -190,3 +199,4 @@ function duffel_search_flights_enqueue_assets() {
 }
 add_action('wp_enqueue_scripts', 'duffel_search_flights_enqueue_assets');
 ?>
+
