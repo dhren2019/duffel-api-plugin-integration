@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Duffel API Integration
  * Description: Integración con la API de Duffel para buscar vuelos.
- * Version: 1.1
+ * Version: 1.2
  * Author: Dhren
  */
 
@@ -78,6 +78,48 @@ if (!function_exists('duffel_search_flights')) {
     }
 }
 
+if (!function_exists('duffel_create_payment')) {
+    function duffel_create_payment($offer_id, $payment_amount, $currency) {
+        $api_key = get_option('duffel_api_key');
+        $url = 'https://api.duffel.com/air/payments';
+
+        $data = [
+            "data" => [
+                "amount" => $payment_amount,
+                "currency" => $currency,
+                "payment_intent_id" => $offer_id
+            ]
+        ];
+
+        $response = wp_remote_post($url, [
+            'method' => 'POST',
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_key,
+                'Duffel-Version' => 'v1',
+                'Content-Type' => 'application/json'
+            ],
+            'timeout' => 15,
+            'body' => wp_json_encode($data)
+        ]);
+
+        if (is_wp_error($response)) {
+            error_log('Error in API request: ' . $response->get_error_message());
+            return ['error' => 'Error in API request: ' . $response->get_error_message()];
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        error_log('API Response Body: ' . $body);
+        $result = json_decode($body, true);
+
+        if ($result === null) {
+            error_log('Error parsing JSON response: ' . json_last_error_msg());
+            return ['error' => 'Error parsing JSON response: ' . json_last_error_msg(), 'response' => $body];
+        }
+
+        return $result;
+    }
+}
+
 // Función para manejar la solicitud AJAX y buscar vuelos en Duffel
 function duffel_search_flights_ajax_handler() {
     if (!isset($_GET['origin']) || !isset($_GET['destination']) || !isset($_GET['departure_date'])) {
@@ -100,6 +142,28 @@ function duffel_search_flights_ajax_handler() {
 }
 add_action('wp_ajax_duffel_search_flights', 'duffel_search_flights_ajax_handler');
 add_action('wp_ajax_nopriv_duffel_search_flights', 'duffel_search_flights_ajax_handler');
+
+// Función para manejar la solicitud AJAX y crear un pago en Duffel
+function duffel_create_payment_ajax_handler() {
+    if (!isset($_POST['offer_id']) || !isset($_POST['amount']) || !isset($_POST['currency'])) {
+        wp_send_json_error('Missing parameters');
+        return;
+    }
+
+    $offer_id = sanitize_text_field($_POST['offer_id']);
+    $amount = sanitize_text_field($_POST['amount']);
+    $currency = sanitize_text_field($_POST['currency']);
+
+    $payment_response = duffel_create_payment($offer_id, $amount, $currency);
+
+    if (isset($payment_response['data'])) {
+        wp_send_json_success($payment_response['data']);
+    } else {
+        wp_send_json_error('Payment creation failed');
+    }
+}
+add_action('wp_ajax_duffel_create_payment', 'duffel_create_payment_ajax_handler');
+add_action('wp_ajax_nopriv_duffel_create_payment', 'duffel_create_payment_ajax_handler');
 
 // Shortcode para mostrar el formulario de búsqueda de vuelos
 function duffel_search_flights_shortcode($atts) {
@@ -173,6 +237,8 @@ function duffel_search_flights_shortcode($atts) {
                 <div class="duffel-itinerary-details">
                     <div id="itinerary-summary">
                         <!-- Aquí se mostrará el resumen del itinerario -->
+                        <input type="hidden" id="selected-offer-id" value="">
+                        <span id="total-amount">$0.00</span>
                     </div>
                 </div>
                 <div class="duffel-itinerary-summary">
@@ -183,13 +249,52 @@ function duffel_search_flights_shortcode($atts) {
                 </div>
             </div>
         </div>
+
+        <!-- Nueva Sección: Formulario de Checkout -->
+        <div id="checkout-section" style="display: none;">
+            <h2>Detalles del Pasajero y Pago</h2>
+
+            <!-- Formulario para datos del pasajero -->
+            <div id="passenger-details-form">
+                <h3>Detalles del Pasajero</h3>
+                <input type="text" id="passenger-email" placeholder="Email">
+                <input type="text" id="passenger-phone" placeholder="Teléfono">
+                <input type="text" id="passenger-given-name" placeholder="Nombre">
+                <input type="text" id="passenger-family-name" placeholder="Apellido">
+                <input type="date" id="passenger-dob" placeholder="Fecha de nacimiento">
+                <select id="passenger-gender">
+                    <option value="male">Masculino</option>
+                    <option value="female">Femenino</option>
+                </select>
+            </div>
+
+            <!-- Formulario para opciones adicionales -->
+            <div id="additional-options-form">
+                <h3>Opciones Adicionales</h3>
+                <div>
+                    <input type="checkbox" id="extra-baggage">
+                    <label for="extra-baggage">Equipaje adicional</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="seat-selection">
+                    <label for="seat-selection">Selección de asiento</label>
+                </div>
+            </div>
+
+            <!-- Formulario para el pago -->
+            <div id="payment-form">
+                <h3>Detalles del Pago</h3>
+                <button id="pay-button">Pagar</button>
+            </div>
+
+            <!-- Confirmación de pago -->
+            <div id="payment-confirmation"></div>
+        </div>
     </div>
     <?php 
     return ob_get_clean();
 }
 add_shortcode('duffel_search_flights', 'duffel_search_flights_shortcode');
-
-
 
 // Encolar el archivo CSS y JS
 function duffel_search_flights_enqueue_assets() {
@@ -198,5 +303,3 @@ function duffel_search_flights_enqueue_assets() {
     wp_localize_script('duffel-scripts', 'ajaxurl', admin_url('admin-ajax.php'));
 }
 add_action('wp_enqueue_scripts', 'duffel_search_flights_enqueue_assets');
-?>
-

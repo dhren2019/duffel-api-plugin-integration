@@ -82,14 +82,86 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
+        // Asegúrate de que el elemento exista antes de intentar establecer valores
+        var offerIdElement = document.getElementById('selected-offer-id');
+        if (!offerIdElement) {
+            console.error("Elemento con ID 'selected-offer-id' no encontrado. Creando ahora...");
+            // Crear el elemento dinámicamente si no existe
+            var hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.id = 'selected-offer-id';
+            hiddenInput.value = selectedOutboundFlight.flight_number;
+            document.getElementById('itinerary-summary-container').appendChild(hiddenInput);
+        } else {
+            offerIdElement.value = selectedOutboundFlight.flight_number;
+        }
+
+        var totalAmountElement = document.getElementById('total-amount');
+        if (!totalAmountElement) {
+            console.error("Elemento con ID 'total-amount' no encontrado. Creando ahora...");
+            // Crear el elemento dinámicamente si no existe
+            var totalAmountSpan = document.createElement('span');
+            totalAmountSpan.id = 'total-amount';
+            totalAmountSpan.innerText = `€${totalAmount.toFixed(2)}`;
+            document.getElementById('itinerary-summary-container').appendChild(totalAmountSpan);
+        } else {
+            totalAmountElement.innerText = `€${totalAmount.toFixed(2)}`;
+        }
+
         document.getElementById('step-2').style.display = 'none';
         document.getElementById('step-3').style.display = 'none';
         document.getElementById('step-4').style.display = 'block';
     }
 
     document.getElementById('go-to-checkout').addEventListener('click', function() {
-        // Aquí puedes añadir la lógica para redirigir a la página de checkout
-        window.location.href = 'checkout-page-url'; // Reemplaza 'checkout-page-url' con la URL de tu página de checkout
+        console.log('Botón de checkout clicado'); // Depuración
+
+        var offerIdElement = document.getElementById('selected-offer-id');
+        if (offerIdElement) {
+            var offerId = offerIdElement.value;
+        } else {
+            console.error("Elemento con ID 'selected-offer-id' no encontrado.");
+            return; // Salir de la función si el elemento no está disponible
+        }
+
+        var totalAmountElement = document.getElementById('total-amount');
+        if (totalAmountElement) {
+            var totalAmount = parseFloat(totalAmountElement.innerText.replace('€', ''));
+        } else {
+            console.error("Elemento con ID 'total-amount' no encontrado.");
+            return; // Salir de la función si el elemento no está disponible
+        }
+
+        var currency = 'EUR'; // Define la moneda según tus necesidades
+
+        console.log('Datos de la oferta:', offerId, totalAmount, currency); // Depuración
+
+        // Mostrar la sección de checkout
+        document.getElementById('itinerary-summary-container').style.display = 'none';
+        document.getElementById('checkout-section').style.display = 'block';
+    });
+
+    document.getElementById('pay-button').addEventListener('click', function() {
+        var offerId = document.getElementById('selected-offer-id').value;
+        var totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
+        var currency = 'EUR';
+        var passengerDetails = {
+            email: document.getElementById('passenger-email').value,
+            phone: document.getElementById('passenger-phone').value,
+            given_name: document.getElementById('passenger-given-name').value,
+            family_name: document.getElementById('passenger-family-name').value,
+            gender: document.getElementById('passenger-gender').value,
+            date_of_birth: document.getElementById('passenger-dob').value
+        };
+
+        if (!passengerDetails.email || !passengerDetails.phone || !passengerDetails.given_name || !passengerDetails.family_name || !passengerDetails.gender || !passengerDetails.date_of_birth) {
+            alert('Por favor, complete todos los datos del pasajero.');
+            return;
+        }
+
+        // Aquí se haría la solicitud de pago a la API de Duffel
+        alert('Pago procesado con éxito para la oferta: ' + offerId);
+        document.getElementById('payment-confirmation').innerHTML = `<p>Pago completado con éxito. ¡Gracias por su compra!</p>`;
     });
 
     function loadOutboundFlights() {
