@@ -250,7 +250,7 @@ function duffel_search_flights_shortcode($atts) {
             </div>
         </div>
 
-        <!-- Nueva Sección: Formulario de Checkout -->
+        <!-- Sección: Formulario de Checkout -->
         <div id="checkout-section" style="display: none;">
             <h2>Detalles del Pasajero y Pago</h2>
 
@@ -281,9 +281,12 @@ function duffel_search_flights_shortcode($atts) {
                 </div>
             </div>
 
-            <!-- Formulario para el pago -->
+            <!-- Contenedor del formulario de tarjeta -->
             <div id="payment-form">
                 <h3>Detalles del Pago</h3>
+                <div id="card-element">
+                    <!-- Stripe montará el formulario de tarjeta aquí -->
+                </div>
                 <button id="pay-button">Pagar</button>
             </div>
 

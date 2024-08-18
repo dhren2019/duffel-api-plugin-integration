@@ -82,11 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        // Asegúrate de que el elemento exista antes de intentar establecer valores
         var offerIdElement = document.getElementById('selected-offer-id');
         if (!offerIdElement) {
             console.error("Elemento con ID 'selected-offer-id' no encontrado. Creando ahora...");
-            // Crear el elemento dinámicamente si no existe
             var hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
             hiddenInput.id = 'selected-offer-id';
@@ -99,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var totalAmountElement = document.getElementById('total-amount');
         if (!totalAmountElement) {
             console.error("Elemento con ID 'total-amount' no encontrado. Creando ahora...");
-            // Crear el elemento dinámicamente si no existe
             var totalAmountSpan = document.createElement('span');
             totalAmountSpan.id = 'total-amount';
             totalAmountSpan.innerText = `€${totalAmount.toFixed(2)}`;
@@ -114,14 +111,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.getElementById('go-to-checkout').addEventListener('click', function() {
-        console.log('Botón de checkout clicado'); // Depuración
+        console.log('Botón de checkout clicado');
 
         var offerIdElement = document.getElementById('selected-offer-id');
         if (offerIdElement) {
             var offerId = offerIdElement.value;
         } else {
             console.error("Elemento con ID 'selected-offer-id' no encontrado.");
-            return; // Salir de la función si el elemento no está disponible
+            return;
         }
 
         var totalAmountElement = document.getElementById('total-amount');
@@ -129,12 +126,12 @@ document.addEventListener('DOMContentLoaded', function() {
             var totalAmount = parseFloat(totalAmountElement.innerText.replace('€', ''));
         } else {
             console.error("Elemento con ID 'total-amount' no encontrado.");
-            return; // Salir de la función si el elemento no está disponible
+            return;
         }
 
-        var currency = 'EUR'; // Define la moneda según tus necesidades
+        var currency = 'EUR';
 
-        console.log('Datos de la oferta:', offerId, totalAmount, currency); // Depuración
+        console.log('Datos de la oferta:', offerId, totalAmount, currency);
 
         // Mostrar la sección de checkout
         document.getElementById('itinerary-summary-container').style.display = 'none';
@@ -145,23 +142,53 @@ document.addEventListener('DOMContentLoaded', function() {
         var offerId = document.getElementById('selected-offer-id').value;
         var totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
         var currency = 'EUR';
-        var passengerDetails = {
-            email: document.getElementById('passenger-email').value,
-            phone: document.getElementById('passenger-phone').value,
-            given_name: document.getElementById('passenger-given-name').value,
-            family_name: document.getElementById('passenger-family-name').value,
-            gender: document.getElementById('passenger-gender').value,
-            date_of_birth: document.getElementById('passenger-dob').value
-        };
 
-        if (!passengerDetails.email || !passengerDetails.phone || !passengerDetails.given_name || !passengerDetails.family_name || !passengerDetails.gender || !passengerDetails.date_of_birth) {
-            alert('Por favor, complete todos los datos del pasajero.');
-            return;
-        }
+        fetch(`${ajaxurl}?action=duffel_create_payment_intent`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: totalAmount,
+                currency: currency
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error creating payment intent: ' + data.error);
+                return;
+            }
 
-        // Aquí se haría la solicitud de pago a la API de Duffel
-        alert('Pago procesado con éxito para la oferta: ' + offerId);
-        document.getElementById('payment-confirmation').innerHTML = `<p>Pago completado con éxito. ¡Gracias por su compra!</p>`;
+            var clientSecret = data.data.client_secret;
+
+            // Inicializa Stripe con tu clave pública
+            var stripe = Stripe('YOUR_PUBLISHABLE_KEY'); // Reemplaza con tu clave pública de Stripe
+
+            // Usar Stripe para confirmar el pago
+            stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: elements.getElement('card'),
+                    billing_details: {
+                        name: document.getElementById('passenger-given-name').value + ' ' + document.getElementById('passenger-family-name').value,
+                        email: document.getElementById('passenger-email').value
+                    }
+                }
+            }).then(function(result) {
+                if (result.error) {
+                    alert(result.error.message);
+                } else {
+                    if (result.paymentIntent.status === 'succeeded') {
+                        alert('Pago completado con éxito');
+                        document.getElementById('payment-confirmation').innerHTML = `<p>Pago completado con éxito. ¡Gracias por su compra!</p>`;
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error creating payment intent:', error);
+            alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
+        });
     });
 
     function loadOutboundFlights() {
@@ -225,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 price: this.dataset.price,
                                 description: this.dataset.description
                             };
-                            console.log('Flight details:', flightDetails); // Log para depuración
+                            console.log('Flight details:', flightDetails);
                             handleFlightSelection(flightDetails);
                         });
                         outboundFlightsContainer.appendChild(flightDiv);
@@ -303,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 price: this.dataset.price,
                                 description: this.dataset.description
                             };
-                            console.log('Flight details:', flightDetails); // Log para depuración
+                            console.log('Flight details:', flightDetails);
                             handleFlightSelection(flightDetails);
                         });
                         returnFlightsContainer.appendChild(flightDiv);
@@ -317,4 +344,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('return-flights').innerHTML = '<p>Error loading return flights. Please try again.</p>';
             });
     }
+
+    // Inicializa Stripe al cargar la página
+    var stripe = Stripe('Ypk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
+    var elements = stripe.elements();
+    var card = elements.create('card');
+    card.mount('#card-element');
 });

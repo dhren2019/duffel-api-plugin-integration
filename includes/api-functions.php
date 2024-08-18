@@ -72,6 +72,69 @@ if (!function_exists('duffel_search_flights')) {
     }
 }
 
+// Nuevo código para crear Payment Intent en Duffel
+if (!function_exists('duffel_create_payment_intent')) {
+    function duffel_create_payment_intent($amount, $currency) {
+        $api_key = get_option('duffel_api_key');
+        $url = 'https://api.duffel.com/air/payment_intents';
+
+        $data = [
+            "data" => [
+                "amount" => $amount,
+                "currency" => $currency
+            ]
+        ];
+
+        $response = wp_remote_post($url, [
+            'method' => 'POST',
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_key,
+                'Duffel-Version' => 'v1',
+                'Content-Type' => 'application/json'
+            ],
+            'timeout' => 15,
+            'body' => wp_json_encode($data)
+        ]);
+
+        if (is_wp_error($response)) {
+            error_log('Error in API request: ' . $response->get_error_message());
+            return ['error' => 'Error in API request: ' . $response->get_error_message()];
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $result = json_decode($body, true);
+
+        if ($result === null) {
+            error_log('Error parsing JSON response: ' . json_last_error_msg());
+            return ['error' => 'Error parsing JSON response: ' . json_last_error_msg(), 'response' => $body];
+        }
+
+        return $result;
+    }
+}
+
+// Nuevo manejador AJAX para crear Payment Intent
+function duffel_create_payment_intent_ajax_handler() {
+    if (!isset($_POST['amount']) || !isset($_POST['currency'])) {
+        wp_send_json_error('Missing parameters');
+        return;
+    }
+
+    $amount = sanitize_text_field($_POST['amount']);
+    $currency = sanitize_text_field($_POST['currency']);
+
+    $payment_intent = duffel_create_payment_intent($amount, $currency);
+
+    if (isset($payment_intent['data'])) {
+        wp_send_json_success($payment_intent['data']);
+    } else {
+        wp_send_json_error('Payment Intent creation failed');
+    }
+}
+add_action('wp_ajax_duffel_create_payment_intent', 'duffel_create_payment_intent_ajax_handler');
+add_action('wp_ajax_nopriv_duffel_create_payment_intent', 'duffel_create_payment_intent_ajax_handler');
+
+
 // Manejador de prueba para AJAX
 function test_ajax_handler() {
     wp_send_json_success('AJAX funciona correctamente');
