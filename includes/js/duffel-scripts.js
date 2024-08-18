@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.getElementById('trip_type').addEventListener('change', toggleReturnDateField);
-    toggleReturnDateField(); // Llamar para establecer el estado inicial
+    toggleReturnDateField();
 
     document.getElementById('next-to-step-2').addEventListener('click', function() {
         document.getElementById('step-1').style.display = 'none';
@@ -84,7 +84,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var offerIdElement = document.getElementById('selected-offer-id');
         if (!offerIdElement) {
-            console.error("Elemento con ID 'selected-offer-id' no encontrado. Creando ahora...");
             var hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
             hiddenInput.id = 'selected-offer-id';
@@ -96,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var totalAmountElement = document.getElementById('total-amount');
         if (!totalAmountElement) {
-            console.error("Elemento con ID 'total-amount' no encontrado. Creando ahora...");
             var totalAmountSpan = document.createElement('span');
             totalAmountSpan.id = 'total-amount';
             totalAmountSpan.innerText = `€${totalAmount.toFixed(2)}`;
@@ -111,29 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.getElementById('go-to-checkout').addEventListener('click', function() {
-        console.log('Botón de checkout clicado');
-
         var offerIdElement = document.getElementById('selected-offer-id');
-        if (offerIdElement) {
-            var offerId = offerIdElement.value;
-        } else {
-            console.error("Elemento con ID 'selected-offer-id' no encontrado.");
-            return;
-        }
+        if (!offerIdElement) return;
 
         var totalAmountElement = document.getElementById('total-amount');
-        if (totalAmountElement) {
-            var totalAmount = parseFloat(totalAmountElement.innerText.replace('€', ''));
-        } else {
-            console.error("Elemento con ID 'total-amount' no encontrado.");
-            return;
-        }
+        if (!totalAmountElement) return;
 
-        var currency = 'EUR';
-
-        console.log('Datos de la oferta:', offerId, totalAmount, currency);
-
-        // Mostrar la sección de checkout
         document.getElementById('itinerary-summary-container').style.display = 'none';
         document.getElementById('checkout-section').style.display = 'block';
     });
@@ -156,16 +137,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                alert('Error creating payment intent: ' + data.error);
+                alert('Error creando Payment Intent: ' + data.error);
                 return;
             }
 
             var clientSecret = data.data.client_secret;
 
             // Inicializa Stripe con tu clave pública
-            var stripe = Stripe('YOUR_PUBLISHABLE_KEY'); // Reemplaza con tu clave pública de Stripe
+            var stripe = Stripe('pk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
 
-            // Usar Stripe para confirmar el pago
+            // Usa Stripe para confirmar el pago
             stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
                     card: elements.getElement('card'),
@@ -186,7 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         })
         .catch(error => {
-            console.error('Error creating payment intent:', error);
             alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
         });
     });
@@ -199,12 +179,10 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`${ajaxurl}?action=duffel_search_flights&origin=${origin}&destination=${destination}&departure_date=${departureDate}`)
             .then(response => response.json())
             .then(data => {
-                console.log('API Response Data:', data);
                 var outboundFlightsContainer = document.getElementById('outbound-flights');
                 outboundFlightsContainer.innerHTML = '';
 
                 if (data.error) {
-                    console.error('Error from API:', data.error);
                     outboundFlightsContainer.innerHTML = `<p>Error loading outbound flights. ${data.error}</p>`;
                     return;
                 }
@@ -212,10 +190,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.length > 0) {
                     data.forEach(flight => {
                         var slice = flight.slices && flight.slices[0];
-                        if (!slice || !slice.segments || slice.segments.length === 0) {
-                            console.error('Invalid slice data:', slice);
-                            return;
-                        }
+                        if (!slice || !slice.segments || slice.segments.length === 0) return;
+
                         var segment = slice.segments[0];
                         var flightDiv = document.createElement('div');
                         flightDiv.classList.add('flight');
@@ -252,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 price: this.dataset.price,
                                 description: this.dataset.description
                             };
-                            console.log('Flight details:', flightDetails);
                             handleFlightSelection(flightDetails);
                         });
                         outboundFlightsContainer.appendChild(flightDiv);
@@ -264,7 +239,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error fetching outbound flights:', error);
                 document.getElementById('outbound-flights').innerHTML = '<p>Error loading outbound flights. Please try again.</p>';
             });
     }
@@ -277,12 +251,10 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`${ajaxurl}?action=duffel_search_flights&origin=${destination}&destination=${origin}&departure_date=${returnDate}`)
             .then(response => response.json())
             .then(data => {
-                console.log('API Response Data:', data);
                 var returnFlightsContainer = document.getElementById('return-flights');
                 returnFlightsContainer.innerHTML = '';
 
                 if (data.error) {
-                    console.error('Error from API:', data.error);
                     returnFlightsContainer.innerHTML = `<p>Error loading return flights. ${data.error}</p>`;
                     return;
                 }
@@ -290,10 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.length > 0) {
                     data.forEach(flight => {
                         var slice = flight.slices && flight.slices[0];
-                        if (!slice || !slice.segments || slice.segments.length === 0) {
-                            console.error('Invalid slice data:', slice);
-                            return;
-                        }
+                        if (!slice || !slice.segments || slice.segments.length === 0) return;
+
                         var segment = slice.segments[0];
                         var flightDiv = document.createElement('div');
                         flightDiv.classList.add('flight');
@@ -330,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 price: this.dataset.price,
                                 description: this.dataset.description
                             };
-                            console.log('Flight details:', flightDetails);
                             handleFlightSelection(flightDetails);
                         });
                         returnFlightsContainer.appendChild(flightDiv);
@@ -340,13 +309,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error fetching return flights:', error);
                 document.getElementById('return-flights').innerHTML = '<p>Error loading return flights. Please try again.</p>';
             });
     }
 
     // Inicializa Stripe al cargar la página
-    var stripe = Stripe('Ypk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
+    var stripe = Stripe('pk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
     var elements = stripe.elements();
     var card = elements.create('card');
     card.mount('#card-element');
