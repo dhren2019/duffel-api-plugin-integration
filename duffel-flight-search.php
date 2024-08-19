@@ -148,21 +148,28 @@ function duffel_create_payment_ajax_handler() {
     if (!isset($_POST['offer_id']) || !isset($_POST['amount']) || !isset($_POST['currency'])) {
         wp_send_json_error('Missing parameters');
         return;
-        require_once __DIR__ . '/stripe-php/init.php'; // Reemplaza con la ruta correcta
-        \Stripe\Stripe::setApiKey('sk_test_51DRoYPK1jLfWhQ4K1PNj0TmIOaUtd3U4XnVp8M9Lw1y55wa94OTtVD8rZtebvPtqOpkEJpGH9MSaQJEKeY1ncmd800YEPvSfXr'); // Reemplaza con tu clave secreta de Stripe
+    }
+
+    require_once __DIR__ . '/stripe-php/init.php'; // Asegúrate de que la ruta sea correcta
+    \Stripe\Stripe::setApiKey('sk_test_51DRoYPK1jLfWhQ4K1PNj0TmIOaUtd3U4XnVp8M9Lw1y55wa94OTtVD8rZtebvPtqOpkEJpGH9MSaQJEKeY1ncmd800YEPvSfXr'); // Reemplaza con tu clave secreta de Stripe
 
     try {
-    $payment_intent = \Stripe\PaymentIntent::create([
-        'amount' => $amount * 100, // Stripe trabaja en centavos
-        'currency' => $currency,
-        'metadata' => [
-            'offer_id' => $offer_id
-        ],
-    ]);
-    wp_send_json_success(['client_secret' => $payment_intent->client_secret]);
-} catch (Exception $e) {
-    wp_send_json_error(['error' => $e->getMessage()]);
-}
+        $amount = sanitize_text_field($_POST['amount']);
+        $currency = sanitize_text_field($_POST['currency']);
+        $offer_id = sanitize_text_field($_POST['offer_id']);
+
+        $payment_intent = \Stripe\PaymentIntent::create([
+            'amount' => $amount * 100, // Stripe trabaja en centavos
+            'currency' => $currency,
+            'metadata' => [
+                'offer_id' => $offer_id
+            ],
+        ]);
+
+        wp_send_json_success(['client_secret' => $payment_intent->client_secret]);
+    } catch (Exception $e) {
+        wp_send_json_error(['error' => $e->getMessage()]);
+    }
 
     }
 

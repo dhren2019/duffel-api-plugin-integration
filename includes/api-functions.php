@@ -122,6 +122,7 @@ function duffel_create_payment_intent_ajax_handler() {
 
     $amount = sanitize_text_field($_POST['amount']);
     $currency = sanitize_text_field($_POST['currency']);
+    
 
     $payment_intent = duffel_create_payment_intent($amount, $currency);
 
@@ -130,6 +131,7 @@ function duffel_create_payment_intent_ajax_handler() {
     } else {
         wp_send_json_error('Payment Intent creation failed');
     }
+    
 }
 add_action('wp_ajax_duffel_create_payment_intent', 'duffel_create_payment_intent_ajax_handler');
 add_action('wp_ajax_nopriv_duffel_create_payment_intent', 'duffel_create_payment_intent_ajax_handler');

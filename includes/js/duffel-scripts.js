@@ -123,7 +123,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var offerId = document.getElementById('selected-offer-id').value;
         var totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
         var currency = 'EUR';
-
+    
+        console.log({
+            amount: totalAmount,
+            currency: currency,
+            offer_id: offerId
+        });
+    
         fetch(`${ajaxurl}?action=duffel_create_payment_intent`, {
             method: 'POST',
             headers: {
@@ -140,12 +146,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Error creando Payment Intent: ' + data.error);
                 return;
             }
-
+    
             var clientSecret = data.data.client_secret;
-
+    
             // Inicializa Stripe con tu clave pública
             var stripe = Stripe('pk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
-
+    
             // Usa Stripe para confirmar el pago
             stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
@@ -170,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
         });
     });
-
+    
     function loadOutboundFlights() {
         var origin = document.getElementById('origin').value;
         var destination = document.getElementById('destination').value;
