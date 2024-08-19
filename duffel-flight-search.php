@@ -171,8 +171,6 @@ function duffel_create_payment_ajax_handler() {
         wp_send_json_error(['error' => $e->getMessage()]);
     }
 
-    }
-
     $offer_id = sanitize_text_field($_POST['offer_id']);
     $amount = sanitize_text_field($_POST['amount']);
     $currency = sanitize_text_field($_POST['currency']);
