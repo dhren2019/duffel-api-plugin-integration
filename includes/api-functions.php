@@ -113,16 +113,17 @@ if (!function_exists('duffel_create_payment_intent')) {
     }
 }
 
-// Nuevo manejador AJAX para crear Payment Intent
+// Manejador AJAX para crear Payment Intent
 function duffel_create_payment_intent_ajax_handler() {
-    if (!isset($_POST['amount']) || !isset($_POST['currency'])) {
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($input['amount']) || !isset($input['currency'])) {
         wp_send_json_error('Missing parameters');
         return;
     }
 
-    $amount = sanitize_text_field($_POST['amount']);
-    $currency = sanitize_text_field($_POST['currency']);
-    
+    $amount = sanitize_text_field($input['amount']);
+    $currency = sanitize_text_field($input['currency']);
 
     $payment_intent = duffel_create_payment_intent($amount, $currency);
 
@@ -131,10 +132,11 @@ function duffel_create_payment_intent_ajax_handler() {
     } else {
         wp_send_json_error('Payment Intent creation failed');
     }
-    
 }
+
 add_action('wp_ajax_duffel_create_payment_intent', 'duffel_create_payment_intent_ajax_handler');
 add_action('wp_ajax_nopriv_duffel_create_payment_intent', 'duffel_create_payment_intent_ajax_handler');
+
 
 
 // Manejador de prueba para AJAX

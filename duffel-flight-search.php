@@ -10,6 +10,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+// Función para buscar vuelos en Duffel
 if (!function_exists('duffel_search_flights')) {
     function duffel_search_flights($origin, $destination, $departure_date, $return_date = null) {
         $api_key = get_option('duffel_api_key');
@@ -58,16 +59,12 @@ if (!function_exists('duffel_search_flights')) {
         }
 
         $body = wp_remote_retrieve_body($response);
-        error_log('API Response Body: ' . $body);  // Registro del cuerpo de la respuesta
         $result = json_decode($body, true);
 
         if ($result === null) {
             error_log('Error parsing JSON response: ' . json_last_error_msg());
             return ['error' => 'Error parsing JSON response: ' . json_last_error_msg(), 'response' => $body];
         }
-
-        // Verificar la respuesta de la API
-        error_log('API Response: ' . print_r($result, true));
 
         if (isset($result['data']['offers'])) {
             return $result['data']['offers'];
@@ -78,49 +75,7 @@ if (!function_exists('duffel_search_flights')) {
     }
 }
 
-if (!function_exists('duffel_create_payment')) {
-    function duffel_create_payment($offer_id, $payment_amount, $currency) {
-        $api_key = get_option('duffel_api_key');
-        $url = 'https://api.duffel.com/air/payments';
-
-        $data = [
-            "data" => [
-                "amount" => $payment_amount,
-                "currency" => $currency,
-                "payment_intent_id" => $offer_id
-            ]
-        ];
-
-        $response = wp_remote_post($url, [
-            'method' => 'POST',
-            'headers' => [
-                'Authorization' => 'Bearer ' . $api_key,
-                'Duffel-Version' => 'v1',
-                'Content-Type' => 'application/json'
-            ],
-            'timeout' => 15,
-            'body' => wp_json_encode($data)
-        ]);
-
-        if (is_wp_error($response)) {
-            error_log('Error in API request: ' . $response->get_error_message());
-            return ['error' => 'Error in API request: ' . $response->get_error_message()];
-        }
-
-        $body = wp_remote_retrieve_body($response);
-        error_log('API Response Body: ' . $body);
-        $result = json_decode($body, true);
-
-        if ($result === null) {
-            error_log('Error parsing JSON response: ' . json_last_error_msg());
-            return ['error' => 'Error parsing JSON response: ' . json_last_error_msg(), 'response' => $body];
-        }
-
-        return $result;
-    }
-}
-
-// Función para manejar la solicitud AJAX y buscar vuelos en Duffel
+// Manejador AJAX para buscar vuelos
 function duffel_search_flights_ajax_handler() {
     if (!isset($_GET['origin']) || !isset($_GET['destination']) || !isset($_GET['departure_date'])) {
         wp_send_json_error('Missing parameters');
@@ -142,49 +97,6 @@ function duffel_search_flights_ajax_handler() {
 }
 add_action('wp_ajax_duffel_search_flights', 'duffel_search_flights_ajax_handler');
 add_action('wp_ajax_nopriv_duffel_search_flights', 'duffel_search_flights_ajax_handler');
-
-// Función para manejar la solicitud AJAX y crear un pago en Duffel
-function duffel_create_payment_ajax_handler() {
-    if (!isset($_POST['offer_id']) || !isset($_POST['amount']) || !isset($_POST['currency'])) {
-        wp_send_json_error('Missing parameters');
-        return;
-    }
-
-    require_once __DIR__ . '/stripe-php/init.php'; // Asegúrate de que la ruta sea correcta
-    \Stripe\Stripe::setApiKey('sk_test_51DRoYPK1jLfWhQ4K1PNj0TmIOaUtd3U4XnVp8M9Lw1y55wa94OTtVD8rZtebvPtqOpkEJpGH9MSaQJEKeY1ncmd800YEPvSfXr'); // Reemplaza con tu clave secreta de Stripe
-
-    try {
-        $amount = sanitize_text_field($_POST['amount']);
-        $currency = sanitize_text_field($_POST['currency']);
-        $offer_id = sanitize_text_field($_POST['offer_id']);
-
-        $payment_intent = \Stripe\PaymentIntent::create([
-            'amount' => $amount * 100, // Stripe trabaja en centavos
-            'currency' => $currency,
-            'metadata' => [
-                'offer_id' => $offer_id
-            ],
-        ]);
-
-        wp_send_json_success(['client_secret' => $payment_intent->client_secret]);
-    } catch (Exception $e) {
-        wp_send_json_error(['error' => $e->getMessage()]);
-    }
-
-    $offer_id = sanitize_text_field($_POST['offer_id']);
-    $amount = sanitize_text_field($_POST['amount']);
-    $currency = sanitize_text_field($_POST['currency']);
-
-    $payment_response = duffel_create_payment($offer_id, $amount, $currency);
-
-    if (isset($payment_response['data'])) {
-        wp_send_json_success($payment_response['data']);
-    } else {
-        wp_send_json_error('Payment creation failed');
-    }
-}
-add_action('wp_ajax_duffel_create_payment', 'duffel_create_payment_ajax_handler');
-add_action('wp_ajax_nopriv_duffel_create_payment', 'duffel_create_payment_ajax_handler');
 
 // Shortcode para mostrar el formulario de búsqueda de vuelos
 function duffel_search_flights_shortcode($atts) {

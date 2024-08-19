@@ -123,13 +123,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var offerId = document.getElementById('selected-offer-id').value;
         var totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
         var currency = 'EUR';
-    
+        
         console.log({
             amount: totalAmount,
             currency: currency,
             offer_id: offerId
         });
-    
+        
         fetch(`${ajaxurl}?action=duffel_create_payment_intent`, {
             method: 'POST',
             headers: {
@@ -137,17 +137,25 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({
                 amount: totalAmount,
-                currency: currency
+                currency: currency,
+                offer_id: offerId
             })
         })
-        .then(response => response.json())
+        
+        
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.error) {
                 alert('Error creando Payment Intent: ' + data.error);
                 return;
             }
     
-            var clientSecret = data.data.client_secret;
+            var clientSecret = data.client_secret;
     
             // Inicializa Stripe con tu clave pública
             var stripe = Stripe('pk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
@@ -174,9 +182,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
+            console.error('Error:', error);
         });
     });
-    
+
     function loadOutboundFlights() {
         var origin = document.getElementById('origin').value;
         var destination = document.getElementById('destination').value;
