@@ -129,6 +129,8 @@ document.addEventListener('DOMContentLoaded', function() {
             currency: currency,
             offer_id: offerId
         });
+
+        console.log(ajaxurl); // Esto imprimirá la URL en la consola
         
         fetch(`${ajaxurl}?action=duffel_create_payment_intent`, {
             method: 'POST',
@@ -141,15 +143,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 offer_id: offerId
             })
         })
-        
-        
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`Error en la solicitud: ${response.statusText}`);
             }
             return response.json();
         })
         .then(data => {
+            console.log('Respuesta:', data); // Logging adicional para ver la respuesta
             if (data.error) {
                 alert('Error creando Payment Intent: ' + data.error);
                 return;

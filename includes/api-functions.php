@@ -104,6 +104,14 @@ if (!function_exists('duffel_create_payment_intent')) {
         $body = wp_remote_retrieve_body($response);
         $result = json_decode($body, true);
 
+        if (isset($payment_intent['data'])) {
+            wp_send_json_success($payment_intent['data']);
+        } else {
+            wp_send_json_error('Payment Intent creation failed');
+            error_log('Payment Intent response: ' . print_r($payment_intent, true)); // Añade un log para ver la respuesta de Duffel
+        }
+        
+
         if ($result === null) {
             error_log('Error parsing JSON response: ' . json_last_error_msg());
             return ['error' => 'Error parsing JSON response: ' . json_last_error_msg(), 'response' => $body];
@@ -117,6 +125,8 @@ if (!function_exists('duffel_create_payment_intent')) {
 function duffel_create_payment_intent_ajax_handler() {
     $input = json_decode(file_get_contents('php://input'), true);
 
+    error_log('Datos recibidos: ' . print_r($input, true)); // Log para verificar los datos recibidos
+    error_log('duffel_create_payment_intent_ajax_handler called'); // Registro para depuración
     if (!isset($input['amount']) || !isset($input['currency'])) {
         wp_send_json_error('Missing parameters');
         return;
@@ -124,7 +134,7 @@ function duffel_create_payment_intent_ajax_handler() {
 
     $amount = sanitize_text_field($input['amount']);
     $currency = sanitize_text_field($input['currency']);
-
+    $offer_id = sanitize_text_field($input['offer_id']); // Añade esto si se requiere offer_id
     $payment_intent = duffel_create_payment_intent($amount, $currency);
 
     if (isset($payment_intent['data'])) {
