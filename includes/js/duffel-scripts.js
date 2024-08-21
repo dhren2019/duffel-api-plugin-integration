@@ -119,19 +119,20 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('checkout-section').style.display = 'block';
     });
 
-    document.getElementById('pay-button').addEventListener('click', function() {
-        var offerId = document.getElementById('selected-offer-id').value;
-        var totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
-        var currency = 'EUR';
-        
-        console.log({
-            amount: totalAmount,
-            currency: currency,
-            offer_id: offerId
-        });
+    // Inicializar el componente de Duffel
+    const duffel = DuffelPayments('duffel_test_7s5cBf4AcLgCbOZBdWfFEl06I4n6UOPmH18j-S4UHBJ'); // Reemplaza con tu clave pública
 
-        console.log(ajaxurl); // Esto imprimirá la URL en la consola
-        
+    // Crear el elemento para la tarjeta
+    const cardElement = duffel.createElement('card');
+    cardElement.mount('#card-element'); // Monta el formulario de la tarjeta en tu contenedor HTML
+
+    // Lógica para el botón de pago
+    document.getElementById('pay-button').addEventListener('click', function () {
+        const offerId = document.getElementById('selected-offer-id').value;
+        const totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
+        const currency = 'EUR';
+
+        // Crear el Payment Intent mediante una solicitud AJAX
         fetch(`${ajaxurl}?action=duffel_create_payment_intent`, {
             method: 'POST',
             headers: {
@@ -143,43 +144,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 offer_id: offerId
             })
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error en la solicitud: ${response.statusText}`);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Respuesta:', data); // Logging adicional para ver la respuesta
-            if (data.error) {
-                alert('Error creando Payment Intent: ' + data.error);
-                return;
-            }
-    
-            var clientSecret = data.client_secret;
-    
-            // Inicializa Stripe con tu clave pública
-            var stripe = Stripe('pk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
-    
-            // Usa Stripe para confirmar el pago
-            stripe.confirmCardPayment(clientSecret, {
-                payment_method: {
-                    card: elements.getElement('card'),
-                    billing_details: {
-                        name: document.getElementById('passenger-given-name').value + ' ' + document.getElementById('passenger-family-name').value,
-                        email: document.getElementById('passenger-email').value
-                    }
-                }
-            }).then(function(result) {
-                if (result.error) {
-                    alert(result.error.message);
-                } else {
-                    if (result.paymentIntent.status === 'succeeded') {
+            if (data.success) {
+                const clientSecret = data.data.client_secret;
+
+                // Confirmar el pago usando Duffel
+                duffel.confirmCardPayment(clientSecret, cardElement).then(result => {
+                    if (result.error) {
+                        alert(result.error.message);
+                    } else if (result.payment_intent.status === 'succeeded') {
                         alert('Pago completado con éxito');
                         document.getElementById('payment-confirmation').innerHTML = `<p>Pago completado con éxito. ¡Gracias por su compra!</p>`;
                     }
-                }
-            });
+                });
+            } else {
+                alert('Error creando Payment Intent: ' + data.error);
+            }
         })
         .catch(error => {
             alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
@@ -328,10 +309,4 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('return-flights').innerHTML = '<p>Error loading return flights. Please try again.</p>';
             });
     }
-
-    // Inicializa Stripe al cargar la página
-    var stripe = Stripe('pk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
-    var elements = stripe.elements();
-    var card = elements.create('card');
-    card.mount('#card-element');
 });
