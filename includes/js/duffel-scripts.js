@@ -119,54 +119,63 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('checkout-section').style.display = 'block';
     });
 
-    // Inicializar el componente de Duffel
-    const duffel = DuffelPayments('duffel_test_7s5cBf4AcLgCbOZBdWfFEl06I4n6UOPmH18j-S4UHBJ'); // Reemplaza con tu clave pública
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof DuffelPayments === 'undefined') {
+            console.error('DuffelPayments no está definido. Asegúrate de que el SDK de Duffel se cargue correctamente.');
+            return;
+        }
+    
+        // Inicializar el componente de Duffel
+        const duffel = DuffelPayments('duffel_test_7s5cBf4AcLgCbOZBdWfFEl06I4n6UOPmH18j-S4UHBJ'); // Reemplaza con tu clave pública
+    
+        // Crear el elemento para la tarjeta
+        const cardElement = duffel.createElement('card');
+        cardElement.mount('#card-element'); // Monta el formulario de la tarjeta en tu contenedor HTML
+    
+        // Lógica para el botón de pago
+        document.getElementById('pay-button').addEventListener('click', function () {
+            const offerId = document.getElementById('selected-offer-id').value;
+            const totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
+            const currency = 'EUR';
+            console.log(typeof DuffelPayments !== 'undefined' ? 'DuffelPayments is available' : 'DuffelPayments is NOT available');
 
-    // Crear el elemento para la tarjeta
-    const cardElement = duffel.createElement('card');
-    cardElement.mount('#card-element'); // Monta el formulario de la tarjeta en tu contenedor HTML
-
-    // Lógica para el botón de pago
-    document.getElementById('pay-button').addEventListener('click', function () {
-        const offerId = document.getElementById('selected-offer-id').value;
-        const totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
-        const currency = 'EUR';
-
-        // Crear el Payment Intent mediante una solicitud AJAX
-        fetch(`${ajaxurl}?action=duffel_create_payment_intent`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                amount: totalAmount,
-                currency: currency,
-                offer_id: offerId
+            // Crear el Payment Intent mediante una solicitud AJAX
+            fetch(`${ajaxurl}?action=duffel_create_payment_intent`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount: totalAmount,
+                    currency: currency,
+                    offer_id: offerId
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const clientSecret = data.data.client_secret;
-
-                // Confirmar el pago usando Duffel
-                duffel.confirmCardPayment(clientSecret, cardElement).then(result => {
-                    if (result.error) {
-                        alert(result.error.message);
-                    } else if (result.payment_intent.status === 'succeeded') {
-                        alert('Pago completado con éxito');
-                        document.getElementById('payment-confirmation').innerHTML = `<p>Pago completado con éxito. ¡Gracias por su compra!</p>`;
-                    }
-                });
-            } else {
-                alert('Error creando Payment Intent: ' + data.error);
-            }
-        })
-        .catch(error => {
-            alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
-            console.error('Error:', error);
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const clientSecret = data.data.client_secret;
+    
+                    // Confirmar el pago usando Duffel
+                    duffel.confirmCardPayment(clientSecret, cardElement).then(result => {
+                        if (result.error) {
+                            alert(result.error.message);
+                        } else if (result.payment_intent.status === 'succeeded') {
+                            alert('Pago completado con éxito');
+                            document.getElementById('payment-confirmation').innerHTML = `<p>Pago completado con éxito. ¡Gracias por su compra!</p>`;
+                        }
+                    });
+                } else {
+                    alert('Error creando Payment Intent: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
+                console.error('Error:', error);
+            });
         });
     });
+    
 
     function loadOutboundFlights() {
         var origin = document.getElementById('origin').value;
