@@ -113,26 +113,32 @@ function duffel_create_payment_intent($amount, $currency, $offer_id) {
 function duffel_create_payment_intent_ajax_handler() {
     $input = json_decode(file_get_contents('php://input'), true);
 
-    // Verificar si los parámetros necesarios están presentes
+    error_log('Datos recibidos en AJAX: ' . print_r($input, true)); // Log para depurar
+
+    // Validar si los parámetros son correctos
     if (!isset($input['amount']) || !isset($input['currency']) || !isset($input['offer_id'])) {
-        wp_send_json_error('Missing parameters');
-        return;
+        wp_send_json_error('Faltan parámetros en la solicitud.');
+        return; // Evita que el código siga ejecutándose
     }
 
     $amount = sanitize_text_field($input['amount']);
     $currency = sanitize_text_field($input['currency']);
     $offer_id = sanitize_text_field($input['offer_id']);
-    
-    // Crear el Payment Intent
+
     $payment_intent = duffel_create_payment_intent($amount, $currency, $offer_id);
 
     if (isset($payment_intent['data'])) {
+        // Respuesta exitosa
         wp_send_json_success($payment_intent['data']);
     } else {
-        wp_send_json_error('Payment Intent creation failed');
+        // Error al crear el Payment Intent
+        error_log('Error creando Payment Intent: ' . print_r($payment_intent, true)); // Log para depurar
+        wp_send_json_error('Error al crear el Payment Intent.');
     }
+    
+    // NO deberías llegar aquí, pero si lo haces, responde con un error genérico
+    wp_send_json_error('Error inesperado.');
 }
-
 
 add_action('wp_ajax_duffel_create_payment_intent', 'duffel_create_payment_intent_ajax_handler');
 add_action('wp_ajax_nopriv_duffel_create_payment_intent', 'duffel_create_payment_intent_ajax_handler');

@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currency: currency,
                 offer_id: offerId
             })
-        })
+        })        
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Error en la solicitud: ${response.statusText}`);
@@ -142,16 +142,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            if (data.success) {
-                // Procesar el pago
-            } else {
-                alert('Error creando Payment Intent: ' + (data.error || 'undefined'));
-            }
+            console.log(data); // Ver el resultado exacto
         })
         .catch(error => {
-            alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
             console.error('Error:', error);
         });
+        
     });    
 
     function loadOutboundFlights() {
