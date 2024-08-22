@@ -10,6 +10,10 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+// Incluir archivos necesarios
+require_once plugin_dir_path(__FILE__) . 'includes/settings.php';
+require_once plugin_dir_path(__FILE__) . 'includes/api-functions.php';
+
 // Función para buscar vuelos en Duffel
 if (!function_exists('duffel_search_flights')) {
     function duffel_search_flights($origin, $destination, $departure_date, $return_date = null) {
@@ -74,29 +78,16 @@ if (!function_exists('duffel_search_flights')) {
         return ['error' => 'No data found in API response', 'response' => $result];
     }
 }
+function duffel_search_flights_enqueue_assets() {
+    wp_enqueue_script('duffel-scripts', plugin_dir_url(__FILE__) . 'includes/js/duffel-scripts.js', array('jquery'), null, true);
 
-// Manejador AJAX para buscar vuelos
-function duffel_search_flights_ajax_handler() {
-    if (!isset($_GET['origin']) || !isset($_GET['destination']) || !isset($_GET['departure_date'])) {
-        wp_send_json_error('Missing parameters');
-        return;
-    }
+    wp_enqueue_style('duffel-styles', plugin_dir_url(__FILE__) . 'includes/css/duffel-styles.css');
 
-    $origin = sanitize_text_field($_GET['origin']);
-    $destination = sanitize_text_field($_GET['destination']);
-    $departure_date = sanitize_text_field($_GET['departure_date']);
-    $return_date = isset($_GET['return_date']) ? sanitize_text_field($_GET['return_date']) : null;
-
-    $flights = duffel_search_flights($origin, $destination, $departure_date, $return_date);
-
-    if (!empty($flights)) {
-        wp_send_json($flights);
-    } else {
-        wp_send_json([]);
-    }
+    wp_localize_script('duffel-scripts', 'duffelAjax', array(
+        'ajaxurl' => admin_url('admin-ajax.php')
+    ));
 }
-add_action('wp_ajax_duffel_search_flights', 'duffel_search_flights_ajax_handler');
-add_action('wp_ajax_nopriv_duffel_search_flights', 'duffel_search_flights_ajax_handler');
+add_action('wp_enqueue_scripts', 'duffel_search_flights_enqueue_assets');
 
 // Shortcode para mostrar el formulario de búsqueda de vuelos
 function duffel_search_flights_shortcode($atts) {
@@ -230,18 +221,3 @@ function duffel_search_flights_shortcode($atts) {
     return ob_get_clean();
 }
 add_shortcode('duffel_search_flights', 'duffel_search_flights_shortcode');
-
-function duffel_search_flights_enqueue_assets() {
-    // Cargar primero el SDK de Duffel
-    wp_enqueue_script('duffel-sdk', 'https://js.duffel.com/v1/', array(), null, true);
-
-    // Luego cargar tu script personalizado que depende del SDK de Duffel
-    wp_enqueue_script('duffel-scripts', plugin_dir_url(__FILE__) . 'includes/js/duffel-scripts.js', array('jquery', 'duffel-sdk'), null, true);
-
-    // Cargar estilos
-    wp_enqueue_style('duffel-styles', plugin_dir_url(__FILE__) . 'includes/css/duffel-styles.css');
-    
-    // Localizar el script para usar `ajaxurl` en JavaScript
-    wp_localize_script('duffel-scripts', 'ajaxurl', admin_url('admin-ajax.php'));
-}
-add_action('wp_enqueue_scripts', 'duffel_search_flights_enqueue_assets');

@@ -176,13 +176,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-
-    function loadOutboundFlights() {
+   function loadOutboundFlights() {
         var origin = document.getElementById('origin').value;
         var destination = document.getElementById('destination').value;
         var departureDate = document.getElementById('departure_date').value;
 
-        fetch(`${ajaxurl}?action=duffel_search_flights&origin=${origin}&destination=${destination}&departure_date=${departureDate}`)
+        fetch(`${duffelAjax.ajaxurl}?action=duffel_search_flights&origin=${origin}&destination=${destination}&departure_date=${departureDate}`)
             .then(response => response.json())
             .then(data => {
                 var outboundFlightsContainer = document.getElementById('outbound-flights');
@@ -318,4 +317,61 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('return-flights').innerHTML = '<p>Error loading return flights. Please try again.</p>';
             });
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var stripe = Stripe('tu_clave_publica_stripe');
+        var elements = stripe.elements();
+        var cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+    
+        document.getElementById('pay-button').addEventListener('click', function () {
+            const totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', '')) * 100; // Cantidad en centavos.
+    
+            fetch(`${ajaxurl}?action=create_stripe_payment_intent`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount: totalAmount
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                return stripe.confirmCardPayment(data.client_secret, {
+                    payment_method: {
+                        card: cardElement,
+                    }
+                });
+            })
+            .then(result => {
+                if (result.error) {
+                    alert(result.error.message);
+                } else if (result.paymentIntent.status === 'succeeded') {
+                    confirmDuffelPaymentIntent(result.paymentIntent.id);
+                }
+            });
+        });
+    
+        function confirmDuffelPaymentIntent(paymentIntentId) {
+            fetch(`${duffelAjax.ajaxurl}?action=confirm_duffel_payment_intent`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    payment_intent_id: paymentIntentId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Pago completado con éxito y confirmado en Duffel');
+                } else {
+                    alert('Error confirmando el pago en Duffel: ' + data.error);
+                }
+            });
+        }
+    });
+    
 });
