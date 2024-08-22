@@ -234,8 +234,17 @@ add_shortcode('duffel_search_flights', 'duffel_search_flights_shortcode');
 
 // Encolar el archivo CSS y JS
 function duffel_search_flights_enqueue_assets() {
+    // Cargar primero el SDK de Stripe
+    wp_enqueue_script('stripe-js', 'https://js.stripe.com/v3/', array(), null, true);
+
+    // Luego cargar tu script personalizado que depende de Stripe y otros scripts
+    wp_enqueue_script('duffel-scripts', plugin_dir_url(__FILE__) . 'includes/js/duffel-scripts.js', array('jquery', 'stripe-js'), null, true);
+
+    // Cargar estilos
     wp_enqueue_style('duffel-styles', plugin_dir_url(__FILE__) . 'includes/css/duffel-styles.css');
-    wp_enqueue_script('duffel-scripts', plugin_dir_url(__FILE__) . 'includes/js/duffel-scripts.js', array('jquery'), null, true);
+    
+    // Localizar el script para usar `ajaxurl` en JavaScript
     wp_localize_script('duffel-scripts', 'ajaxurl', admin_url('admin-ajax.php'));
 }
 add_action('wp_enqueue_scripts', 'duffel_search_flights_enqueue_assets');
+

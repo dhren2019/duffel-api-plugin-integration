@@ -123,15 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var offerId = document.getElementById('selected-offer-id').value;
         var totalAmount = parseFloat(document.getElementById('total-amount').innerText.replace('€', ''));
         var currency = 'EUR';
-        
-        console.log({
-            amount: totalAmount,
-            currency: currency,
-            offer_id: offerId
-        });
-
-        console.log(ajaxurl); // Esto imprimirá la URL en la consola
-        
+    
         fetch(`${ajaxurl}?action=duffel_create_payment_intent`, {
             method: 'POST',
             headers: {
@@ -150,42 +142,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            console.log('Respuesta:', data); // Logging adicional para ver la respuesta
-            if (data.error) {
-                alert('Error creando Payment Intent: ' + data.error);
-                return;
+            if (data.success) {
+                // Procesar el pago
+            } else {
+                alert('Error creando Payment Intent: ' + (data.error || 'undefined'));
             }
-    
-            var clientSecret = data.client_secret;
-    
-            // Inicializa Stripe con tu clave pública
-            var stripe = Stripe('pk_test_TVkFRF6cn7YeFfMCVm5u3wE7'); // Reemplaza con tu clave pública de Stripe
-    
-            // Usa Stripe para confirmar el pago
-            stripe.confirmCardPayment(clientSecret, {
-                payment_method: {
-                    card: elements.getElement('card'),
-                    billing_details: {
-                        name: document.getElementById('passenger-given-name').value + ' ' + document.getElementById('passenger-family-name').value,
-                        email: document.getElementById('passenger-email').value
-                    }
-                }
-            }).then(function(result) {
-                if (result.error) {
-                    alert(result.error.message);
-                } else {
-                    if (result.paymentIntent.status === 'succeeded') {
-                        alert('Pago completado con éxito');
-                        document.getElementById('payment-confirmation').innerHTML = `<p>Pago completado con éxito. ¡Gracias por su compra!</p>`;
-                    }
-                }
-            });
         })
         .catch(error => {
             alert('Error en el proceso de pago. Por favor, inténtelo de nuevo.');
             console.error('Error:', error);
         });
-    });
+    });    
 
     function loadOutboundFlights() {
         var origin = document.getElementById('origin').value;
