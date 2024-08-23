@@ -1,19 +1,33 @@
 import React, { useState } from 'react';
+import Autocomplete from './Autocomplete'; // Asegúrate de que la ruta sea correcta
 
 function FlightSearch() {
-    const [origin, setOrigin] = useState('');
-    const [destination, setDestination] = useState('');
+    const [selectedOrigin, setSelectedOrigin] = useState(null);
+    const [selectedDestination, setSelectedDestination] = useState(null);
     const [departureDate, setDepartureDate] = useState('');
     const [results, setResults] = useState(null);
 
     const handleSearch = (event) => {
         event.preventDefault();
 
-        // Datos de la solicitud
+        // Mostrar en la consola los valores actuales
+        console.log("Selected Origin:", selectedOrigin);
+        console.log("Selected Destination:", selectedDestination);
+        console.log("Departure Date:", departureDate);
+
+        if (!selectedOrigin?.iata_code || !selectedDestination?.iata_code || !departureDate) {
+            setResults({
+                code: "missing_params",
+                message: "Faltan algunos parámetros requeridos (origin, destination, departure_date).",
+                data: null
+            });
+            return;
+        }
+
         const searchParams = {
-            origin: origin || 'LHR', // Código IATA de origen (default: LHR)
-            destination: destination || 'JFK', // Código IATA de destino (default: JFK)
-            departure_date: departureDate || '2024-10-01', // Fecha de salida (default)
+            origin: selectedOrigin.iata_code,
+            destination: selectedDestination.iata_code,
+            departure_date: departureDate
         };
 
         fetch('/wp-json/duffel/v1/search', {
@@ -29,22 +43,45 @@ function FlightSearch() {
     };
 
     return (
-        <div>
+        <div style={{ position: 'relative', maxWidth: '600px', margin: 'auto' }}>
             <h2>Busca tu vuelo</h2>
             <form onSubmit={handleSearch}>
-                <div>
+                <div style={{ marginBottom: '20px' }}>
                     <label>Origen</label>
-                    <input type="text" value={origin} onChange={(e) => setOrigin(e.target.value)} placeholder="LHR" />
+                    <Autocomplete
+                        label="Origen"
+                        placeholder="Ingresa una ciudad, aeropuerto o código IATA"
+                        onSelect={setSelectedOrigin} // Aquí se recibe la ubicación seleccionada
+                        fetchOptions={{
+                            url: '/wp-json/duffel/v1/proxy-locations',
+                            queryParam: 'query',
+                        }}
+                    />
                 </div>
-                <div>
+                <div style={{ marginBottom: '20px' }}>
                     <label>Destino</label>
-                    <input type="text" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="JFK" />
+                    <Autocomplete
+                        label="Destino"
+                        placeholder="Ingresa una ciudad, aeropuerto o código IATA"
+                        onSelect={setSelectedDestination} // Aquí se recibe la ubicación seleccionada
+                        fetchOptions={{
+                            url: '/wp-json/duffel/v1/proxy-locations',
+                            queryParam: 'query',
+                        }}
+                    />
                 </div>
-                <div>
+                <div style={{ marginBottom: '20px' }}>
                     <label>Fecha de salida</label>
-                    <input type="date" value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
+                    <input
+                        type="date"
+                        value={departureDate}
+                        onChange={(e) => setDepartureDate(e.target.value)}
+                        style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                    />
                 </div>
-                <button type="submit">Buscar</button>
+                <button type="submit" style={{ padding: '10px 20px', backgroundColor: 'black', color: 'white', border: 'none', cursor: 'pointer' }}>
+                    Buscar
+                </button>
             </form>
             {results && <pre>{JSON.stringify(results, null, 2)}</pre>}
         </div>

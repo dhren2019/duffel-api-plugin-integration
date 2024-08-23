@@ -1,8 +1,8 @@
 import React from 'react';
 import { render } from 'react-dom';
-import FlightSearch from './components/FlightSearch'; // Tu componente React para la búsqueda de vuelos
+import FlightSearch from './components/FlightSearch';
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('duffel-flight-search');
     if (container) {
         render(<FlightSearch />, container);

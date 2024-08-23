@@ -1,104 +1,46 @@
-/* Estilo general del contenedor */
-#duffel-flight-search {
+.form-container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
     background-color: #fff;
-    font-family: 'Arial', sans-serif;
-}
-
-/* Estilo del encabezado */
-#duffel-flight-search h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #333;
-    text-align: center;
-}
-
-/* Estilo del formulario */
-#duffel-flight-search form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-/* Estilo de los campos de entrada */
-#duffel-flight-search input[type="text"],
-#duffel-flight-search input[type="date"],
-#duffel-flight-search select {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  input[type="text"],
+  input[type="date"],
+  select {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    margin-bottom: 20px;
     border-radius: 4px;
+    border: 1px solid #ccc;
     font-size: 16px;
-}
-
-/* Alinear el botón de búsqueda */
-#duffel-flight-search button[type="submit"] {
-    grid-column: span 2;
-    padding: 12px;
-    font-size: 16px;
+  }
+  
+  button {
+    padding: 12px 20px;
     background-color: #000;
     color: #fff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    text-align: center;
-    transition: background-color 0.3s;
-}
-
-#duffel-flight-search button[type="submit"]:hover {
-    background-color: #333;
-}
-
-/* Estilo para el contenedor de resultados */
-#duffel-flight-search pre {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f7f7f7;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    white-space: pre-wrap;
-}
-
-/* Estilo para las opciones avanzadas */
-#duffel-flight-search .advanced-options {
-    font-size: 14px;
-    margin-top: 10px;
-    color: #0073aa;
-    cursor: pointer;
-    text-align: right;
-}
-
-/* Estilo para opciones adicionales */
-.advanced-options-content {
-    display: none;
-    margin-top: 10px;
-}
-
-.advanced-options-content.active {
-    display: block;
-}
-
-/* Opciones de radio para el tipo de viaje */
-.journey-type-options {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.journey-type-options input[type="radio"] {
-    margin-right: 5px;
-}
-
-.journey-type-options label {
     font-size: 16px;
-}
-
-/* Clase para errores de la API */
-.error-message {
-    color: red;
-    font-weight: bold;
-}
+    width: 100%;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #444;
+  }
+  
+  .autocomplete-list li {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .autocomplete-list li:hover {
+    background-color: #f0f0f0;
+  }
+  

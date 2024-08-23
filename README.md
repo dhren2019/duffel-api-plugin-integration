@@ -45,7 +45,7 @@ El **Duffel API Integration Plugin** es una herramienta poderosa y fácil de usa
 Para utilizar el plugin, inserta el siguiente shortcode en cualquier página o entrada donde desees que aparezca el formulario de búsqueda de vuelos:
 
 ```html
-[duffel_search_flights]
+[duffel_flight_search]
 ```
 
 ## Desarrollo
