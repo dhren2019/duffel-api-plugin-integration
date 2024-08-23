@@ -1,0 +1,19 @@
+# Dependencias de Node.js
+node_modules/
+
+# Salidas de compilación
+dist/
+
+# Archivos de configuración de paquetes
+package-lock.json
+
+# Archivos de log de npm/yarn
+npm-debug.log
+yarn-error.log
+
+# Archivos específicos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuraciones de compilación
+webpack.config.js
