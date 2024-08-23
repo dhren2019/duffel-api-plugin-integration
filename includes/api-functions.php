@@ -36,6 +36,7 @@ if (!function_exists('duffel_search_flights')) {
             'body' => json_encode([
                 'data' => $request_body
             ]),
+             'timeout' => 30, // Aumenta el tiempo de espera a 30 segundos (ajusta según sea necesario)
         ));
 
         if (is_wp_error($response)) {
