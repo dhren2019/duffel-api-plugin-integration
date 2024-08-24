@@ -6,17 +6,14 @@ if (!function_exists('duffel_search_flights')) {
 
         // Verifica si la clave API está configurada
         if (!$api_key) {
-            error_log('Error: Clave API no configurada');
             return new WP_Error('no_api_key', 'La clave API de Duffel no está configurada.');
         }
 
         // Obtiene los parámetros del request
         $params = $request->get_params();
-        error_log('Parámetros recibidos: ' . print_r($params, true)); // Log de los parámetros recibidos
 
         // Verifica que los parámetros necesarios estén presentes
         if (empty($params['origin']) || empty($params['destination']) || empty($params['departure_date'])) {
-            error_log('Error: Faltan algunos parámetros requeridos');
             return new WP_Error('missing_params', 'Faltan algunos parámetros requeridos (origin, destination, departure_date).');
         }
 
@@ -36,8 +33,6 @@ if (!function_exists('duffel_search_flights')) {
             ]
         ];
 
-        error_log('Cuerpo de la solicitud: ' . json_encode($request_body)); // Log del cuerpo de la solicitud
-
         // Realiza la solicitud a la API de Duffel
         $response = wp_remote_post('https://api.duffel.com/air/offer_requests', array(
             'headers' => array(
@@ -50,16 +45,21 @@ if (!function_exists('duffel_search_flights')) {
 
         // Verifica si hay errores en la solicitud
         if (is_wp_error($response)) {
-            error_log('Error en la solicitud a Duffel: ' . $response->get_error_message());
             return new WP_Error('api_error', 'Error en la solicitud a Duffel: ' . $response->get_error_message());
         }
 
         $body = wp_remote_retrieve_body($response);
-        error_log('Respuesta de Duffel: ' . $body); // Log de la respuesta de Duffel
-
         return json_decode($body, true);
     }
 }
+
+// Registra el endpoint para manejar la búsqueda de vuelos
+add_action('rest_api_init', function () {
+    register_rest_route('duffel/v1', '/search', array(
+        'methods' => 'POST',
+        'callback' => 'duffel_search_flights',
+    ));
+});
 
 
 if (!function_exists('duffel_proxy_locations')) {
@@ -67,17 +67,18 @@ if (!function_exists('duffel_proxy_locations')) {
         $query = $request->get_param('query');
         $api_key = get_option('duffel_api_key');
 
+        // Verifica que la clave API esté configurada
         if (!$api_key) {
             return new WP_Error('no_api_key', 'La clave API de Duffel no está configurada.');
         }
 
-        $response = wp_remote_get("https://api.duffel.com/places/suggestions?query=" . urlencode($query), [
-            'headers' => [
+        $response = wp_remote_get("https://api.duffel.com/places/suggestions?query=" . urlencode($query), array(
+            'headers' => array(
                 'Authorization' => 'Bearer ' . $api_key,
                 'Content-Type' => 'application/json',
                 'Duffel-Version' => 'v1',
-            ],
-        ]);
+            ),
+        ));
 
         if (is_wp_error($response)) {
             return new WP_Error('api_error', 'Error en la solicitud a Duffel: ' . $response->get_error_message());
@@ -94,13 +95,14 @@ if (!function_exists('duffel_proxy_locations')) {
 }
 
 add_action('rest_api_init', function () {
-    register_rest_route('duffel/v1', '/proxy-locations', [
+    register_rest_route('duffel/v1', '/proxy-locations', array(
         'methods' => 'GET',
         'callback' => 'duffel_proxy_locations',
-    ]);
-
-    register_rest_route('duffel/v1', '/search', [
+    ));
+    register_rest_route('duffel/v1', '/search', array(
         'methods' => 'POST',
         'callback' => 'duffel_search_flights',
-    ]);
+    ));
 });
+
+

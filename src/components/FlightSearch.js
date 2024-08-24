@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Autocomplete from './Autocomplete'; // Asegúrate de que la ruta sea correcta
+import Autocomplete from './duffel/Autocomplete'; // Ajusta la ruta según la ubicación del componente
 
 function FlightSearch() {
     const [selectedOrigin, setSelectedOrigin] = useState(null);
@@ -51,24 +51,28 @@ function FlightSearch() {
                     <Autocomplete
                         label="Origen"
                         placeholder="Ingresa una ciudad, aeropuerto o código IATA"
-                        onSelect={setSelectedOrigin} // Aquí se recibe la ubicación seleccionada
+                        onSelect={(location) => {
+                            console.log("Origen seleccionado:", location); // Comprueba si se ejecuta este log
+                            setSelectedOrigin(location);
+                        }}
                         fetchOptions={{
                             url: '/wp-json/duffel/v1/proxy-locations',
                             queryParam: 'query',
                         }}
                     />
-                </div>
-                <div style={{ marginBottom: '20px' }}>
-                    <label>Destino</label>
                     <Autocomplete
                         label="Destino"
                         placeholder="Ingresa una ciudad, aeropuerto o código IATA"
-                        onSelect={setSelectedDestination} // Aquí se recibe la ubicación seleccionada
+                        onSelect={(location) => {
+                            console.log("Destino seleccionado:", location); // Comprueba si se ejecuta este log
+                            setSelectedDestination(location);
+                        }}
                         fetchOptions={{
                             url: '/wp-json/duffel/v1/proxy-locations',
                             queryParam: 'query',
                         }}
                     />
+
                 </div>
                 <div style={{ marginBottom: '20px' }}>
                     <label>Fecha de salida</label>
