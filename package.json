@@ -6,12 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode production && npm run copy-files",
-     "copy-files": "mkdirp dist && npx cpy \"includes/**/*\" dist/includes && npx cpy duffel-flight-search.php includes/settings.php LICENSE README.md dist/"
+    "copy-files": "mkdirp dist && npx cpy \"includes/**/*\" dist/includes && npx cpy duffel-flight-search.php includes/settings.php LICENSE README.md dist/"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@duffel/components": "^3.7.18",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

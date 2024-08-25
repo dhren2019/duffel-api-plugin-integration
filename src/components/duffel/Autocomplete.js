@@ -3,34 +3,34 @@ import React, { useState, useEffect } from 'react';
 const Autocomplete = ({ label, placeholder, onSelect, fetchOptions }) => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
+    const [isDropdownVisible, setDropdownVisible] = useState(false);
 
     useEffect(() => {
         if (query.length >= 3) {
             const url = `${fetchOptions.url}?${fetchOptions.queryParam}=${encodeURIComponent(query)}`;
-    
+
             fetch(url)
                 .then((response) => response.json())
                 .then((data) => {
-                    console.log("Datos recibidos:", data); // Asegúrate de que estás recibiendo los datos esperados
+                    console.log("Datos recibidos:", data);
                     setResults(data.data || []);
+                    setDropdownVisible(true); // Muestra el desplegable
                 })
                 .catch((error) => console.error('Error fetching locations:', error));
         } else {
             setResults([]);
+            setDropdownVisible(false); // Oculta el desplegable si la consulta es demasiado corta
         }
     }, [query, fetchOptions]);
-    
 
     const handleSelect = (location) => {
-        console.log("Location seleccionada:", location); // Deberías ver esto cuando haces clic en una opción
-        onSelect({
-            iata_code: location.iata_code,
-            name: `${location.city_name} (${location.iata_code}) - ${location.name}`,
-        });
+        onSelect(location);
         setQuery(`${location.city_name} (${location.iata_code}) - ${location.name}`);
-        setResults([]);
+        setDropdownVisible(false); // Cierra el desplegable
+        setTimeout(() => {
+            document.activeElement.blur(); // Fuerza el foco fuera del input
+        }, 0);
     };
-    
 
     return (
         <div style={{ position: 'relative' }}>
@@ -40,8 +40,9 @@ const Autocomplete = ({ label, placeholder, onSelect, fetchOptions }) => {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={placeholder}
                 style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                onFocus={() => setDropdownVisible(true)} // Abre el desplegable al enfocar
             />
-            {results.length > 0 && (
+            {isDropdownVisible && results.length > 0 && (
                 <ul className="autocomplete-list" style={{ position: 'absolute', top: '100%', left: 0, width: '100%', border: '1px solid #ccc', zIndex: 1000, backgroundColor: 'white', maxHeight: '200px', overflowY: 'auto' }}>
                     {results.map((location) => (
                         <li
