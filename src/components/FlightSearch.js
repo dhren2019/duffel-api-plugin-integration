@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
-import Autocomplete from './duffel/Autocomplete'; // Adjust the path according to the location of the component
+import React, { useState, useEffect, useRef } from 'react';
+import Autocomplete from './duffel/Autocomplete';
 
 function FlightSearch() {
     const [selectedOrigin, setSelectedOrigin] = useState(null);
     const [selectedDestination, setSelectedDestination] = useState(null);
-    console.log('setSelectedDestination:', setSelectedDestination);
     const [departureDate, setDepartureDate] = useState('');
     const [returnDate, setReturnDate] = useState('');
     const [results, setResults] = useState(null);
     const [journeyType, setJourneyType] = useState('one-way');
     const [flights, setFlights] = useState([{ origin: null, destination: null, departureDate: '' }]);
-    
+    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownVisible(false);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [dropdownRef]);
 
     const handleJourneyTypeChange = (e) => {
         setJourneyType(e.target.value);
@@ -25,7 +39,12 @@ function FlightSearch() {
     };
 
     const addFlight = () => {
-        setFlights([...flights, { origin: null, destination: null, departureDate: '' }]);
+        const lastFlight = flights[flights.length - 1];
+        if (lastFlight.origin && lastFlight.destination && lastFlight.departureDate) {
+            setFlights([...flights, { origin: null, destination: null, departureDate: '' }]);
+        } else {
+            alert("Por favor, completa los detalles del vuelo actual antes de añadir otro vuelo.");
+        }
     };
 
     const removeFlight = (index) => {
@@ -83,24 +102,39 @@ function FlightSearch() {
         .catch(error => console.error('Error en la búsqueda:', error));
     };
 
-    const handleSelect = (location, type) => {
+    const handleSelect = (location, type, index) => {
         if (location && location.iata_code && location.name) {
-            if (type === 'origin') {
-                setSelectedOrigin(location);
+            const newFlights = [...flights];
+
+            if (index !== undefined) {
+                if (type === 'origin') {
+                    newFlights[index].origin = location;
+                } else if (type === 'destination') {
+                    newFlights[index].destination = location;
+                }
             } else {
-                setSelectedDestination(location);
+                if (type === 'origin') {
+                    setSelectedOrigin(location);
+                } else if (type === 'destination') {
+                    setSelectedDestination(location);
+                }
             }
-            setTimeout(() => {
-                document.activeElement.blur();  // Esto ayuda a cerrar el desplegable de autocompletar
-            }, 0);
+
+            setFlights(newFlights);
+            setIsDropdownVisible(false);
         } else {
             console.error('Datos de ubicación inválidos:', location);
         }
     };
-    
-    
+
+    const handleFocus = () => {
+        if (!isDropdownVisible) {
+            setIsDropdownVisible(true);
+        }
+    };
+
     return (
-        <div style={{ position: 'relative', maxWidth: '600px', margin: 'auto' }}>
+        <div style={{ position: 'relative', maxWidth: '600px', margin: 'auto' }} ref={dropdownRef}>
             <h2>Busca tu vuelo</h2>
             <form onSubmit={handleSearch}>
                 <div style={{ marginBottom: '20px' }}>
@@ -109,7 +143,7 @@ function FlightSearch() {
                     <input type="radio" value="round-trip" checked={journeyType === 'round-trip'} onChange={handleJourneyTypeChange}/> Ida y vuelta
                     <input type="radio" value="multi-city" checked={journeyType === 'multi-city'} onChange={handleJourneyTypeChange}/> Multidestino
                 </div>
-    
+
                 {journeyType === 'multi-city' ? (
                     flights.map((flight, index) => (
                         <div key={index} style={{ marginBottom: '20px' }}>
@@ -118,32 +152,26 @@ function FlightSearch() {
                             <Autocomplete
                                 label="Origen"
                                 placeholder="Ingresa una ciudad, aeropuerto o código IATA"
-                                onSelect={(location) => {
-                                    const newFlights = [...flights];
-                                    newFlights[index].origin = location;
-                                    setFlights(newFlights);
-                                    handleSelect(location, 'origin');  // Call handleSelect to close the autocomplete
-                                }}
+                                onSelect={(location) => handleSelect(location, 'origin', index)}
+                                onFocus={handleFocus}
                                 fetchOptions={{
                                     url: '/wp-json/duffel/v1/proxy-locations',
                                     queryParam: 'query',
                                 }}
                             />
+
                             <label>Destino</label>
                             <Autocomplete
                                 label="Destino"
                                 placeholder="Ingresa una ciudad, aeropuerto o código IATA"
-                                onSelect={(location) => {
-                                    const newFlights = [...flights];
-                                    newFlights[index].destination = location;
-                                    setFlights(newFlights);
-                                    handleSelect(location, 'destination');  // Call handleSelect to close the autocomplete
-                                }}
+                                onSelect={(location) => handleSelect(location, 'destination', index)}
+                                onFocus={handleFocus}
                                 fetchOptions={{
                                     url: '/wp-json/duffel/v1/proxy-locations',
                                     queryParam: 'query',
                                 }}
                             />
+
                             <label>Fecha de salida</label>
                             <input
                                 type="date"
@@ -168,20 +196,12 @@ function FlightSearch() {
                                 label="Origen"
                                 placeholder="Ingresa una ciudad, aeropuerto o código IATA"
                                 onSelect={(location) => handleSelect(location, 'origin')}
+                                onFocus={handleFocus}
                                 fetchOptions={{
                                     url: '/wp-json/duffel/v1/proxy-locations',
                                     queryParam: 'query',
                                 }}
                             />
-                            {selectedOrigin && (
-                                <input
-                                    type="text"
-                                    value={`${selectedOrigin.iata_code} - ${selectedOrigin.name}`}
-                                    readOnly
-                                    placeholder="Selecciona un origen"
-                                    style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                                />
-                            )}
                         </div>
                         <div style={{ marginBottom: '20px' }}>
                             <label>Destino</label>
@@ -189,20 +209,12 @@ function FlightSearch() {
                                 label="Destino"
                                 placeholder="Ingresa una ciudad, aeropuerto o código IATA"
                                 onSelect={(location) => handleSelect(location, 'destination')}
+                                onFocus={handleFocus}
                                 fetchOptions={{
                                     url: '/wp-json/duffel/v1/proxy-locations',
                                     queryParam: 'query',
                                 }}
                             />
-                            {selectedDestination && (
-                                <input
-                                    type="text"
-                                    value={`${selectedDestination.iata_code} - ${selectedDestination.name}`}
-                                    readOnly
-                                    placeholder="Selecciona un destino"
-                                    style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                                />
-                            )}
                         </div>
                         <div style={{ marginBottom: '20px' }}>
                             <label>Fecha de salida</label>
@@ -226,11 +238,11 @@ function FlightSearch() {
                         )}
                     </>
                 )}
-    
+
                 {journeyType === 'multi-city' && (
                     <button type="button" onClick={addFlight}>Añadir otro vuelo</button>
                 )}
-    
+
                 <button type="submit" style={{ padding: '10px 20px', backgroundColor: 'black', color: 'white', border: 'none', cursor: 'pointer' }}>
                     Buscar
                 </button>
