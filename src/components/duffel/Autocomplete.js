@@ -44,15 +44,23 @@ const Autocomplete = ({ label, placeholder, onSelect, fetchOptions }) => {
     const handleSelect = (location) => {
         console.log('Elemento seleccionado:', location);
         if (location && location.iata_code && location.name) {
+            // Si los datos son válidos, actualiza el estado y la query
             onSelect(location);
-            setQuery(`${location.city_name} (${location.iata_code}) - ${location.name}`);
+            
+            // Aquí se maneja la concatenación de los datos correctamente
+            const formattedQuery = `${location.city_name || ''} (${location.iata_code || ''}) - ${location.name || ''}`;
+            setQuery(formattedQuery.trim()); // Asegúrate de que no haya espacios extra si falta un dato
+    
             setSelectionMade(true); // Marcar que se ha hecho una selección
-            setResults([]);
+            setResults([]); // Limpia los resultados para cerrar el dropdown
             setDropdownVisible(false); // Asegurarse de que el dropdown se cierre
+    
+            console.log('Formatted query:', formattedQuery); // Para depurar la cadena final
         } else {
             console.error('Datos de ubicación inválidos:', location);
         }
     };
+    
 
     const handleInputChange = (e) => {
         const value = e.target.value;
