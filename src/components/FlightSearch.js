@@ -43,21 +43,6 @@ function FlightSearch() {
         }
     };
 
-    const addFlight = () => {
-        const lastFlight = flights[flights.length - 1];
-        if (lastFlight.origin && lastFlight.destination && lastFlight.departureDate) {
-            setFlights([...flights, { origin: null, destination: null, departureDate: '' }]);
-        } else {
-            alert("Por favor, completa los detalles del vuelo actual antes de añadir otro vuelo.");
-        }
-    };
-
-    const removeFlight = (index) => {
-        const newFlights = [...flights];
-        newFlights.splice(index, 1);
-        setFlights(newFlights);
-    };
-
     const handleSearch = (event) => {
         event.preventDefault();
     
@@ -212,62 +197,72 @@ function FlightSearch() {
                 </div>
     
                 {/* Segunda fila: Origen y Destino */}
-                <div className="form-field">
-                    <label>Origin</label>
-                    <Autocomplete
-                        placeholder="Enter a city or airport"
-                        onSelect={(location) => handleSelect(location, 'origin')}
-                        fetchOptions={{
-                            url: '/wp-json/duffel/v1/proxy-locations',
-                            queryParam: 'query',
-                        }}
-                    />
-                </div>
-                <div className="form-field">
-                    <label>Destination</label>
-                    <Autocomplete
-                        placeholder="Enter a city or airport"
-                        onSelect={(location) => handleSelect(location, 'destination')}
-                        fetchOptions={{
-                            url: '/wp-json/duffel/v1/proxy-locations',
-                            queryParam: 'query',
-                        }}
-                    />
+                <div className="form-row">
+                    <div className="form-field half-width">
+                        <label>Origin</label>
+                        <Autocomplete
+                            placeholder="Enter a city or airport"
+                            onSelect={(location) => handleSelect(location, 'origin')}
+                            fetchOptions={{
+                                url: '/wp-json/duffel/v1/proxy-locations',
+                                queryParam: 'query',
+                            }}
+                        />
+                    </div>
+                    <div className="form-field half-width">
+                        <label>Destination</label>
+                        <Autocomplete
+                            placeholder="Enter a city or airport"
+                            onSelect={(location) => handleSelect(location, 'destination')}
+                            fetchOptions={{
+                                url: '/wp-json/duffel/v1/proxy-locations',
+                                queryParam: 'query',
+                            }}
+                        />
+                    </div>
                 </div>
     
                 {/* Tercera fila: Fecha de salida y, si aplica, Fecha de regreso */}
-                <div className="form-field half-width">
-                    <label>Departure date</label>
-                    <input type="date" value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
-                </div>
-    
-                {journeyType === 'round-trip' && (
+                <div className="form-row">
                     <div className="form-field half-width">
-                        <label>Return date</label>
-                        <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
+                        <label>Departure date</label>
+                        <input type="date" value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
                     </div>
-                )}
-
-                {/* Campos para pasajeros y clase */}
-                <div className="form-field half-width">
-                    <label>Passengers</label>
-                    <select value={selectedPassengers} onChange={(e) => setSelectedPassengers(e.target.value)}>
-                        <option value="1 adult">1 adult</option>
-                        <option value="2 adults">2 adults</option>
-                        <option value="1 adult, 1 child">1 adult, 1 child</option>
-                        {/* Añade más opciones según necesites */}
-                    </select>
+    
+                    {journeyType === 'round-trip' && (
+                        <div className="form-field half-width">
+                            <label>Return date</label>
+                            <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
+                        </div>
+                    )}
                 </div>
 
-                <div className="form-field half-width">
-                    <label>Class</label>
-                    <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)}>
-                        <option value="Economy">Economy</option>
-                        <option value="Premium Economy">Premium Economy</option>
-                        <option value="Business">Business</option>
-                        <option value="First">First</option>
-                        <option value="Any">Any</option>
-                    </select>
+                {/* Cuarta fila: Pasajeros y clase */}
+                <div className="form-row">
+                    <div className="form-field half-width">
+                        <label>Passengers</label>
+                        <select value={selectedPassengers} onChange={(e) => setSelectedPassengers(e.target.value)}>
+                            <option value="1 adult">1 adult</option>
+                            <option value="2 adults">2 adults</option>
+                            <option value="1 adult, 1 child">1 adult, 1 child</option>
+                            {/* Añade más opciones según necesites */}
+                        </select>
+                    </div>
+
+                    <div className="form-field half-width">
+                        <label>Class</label>
+                        <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)}>
+                            <option value="Economy">Economy</option>
+                            <option value="Premium Economy">Premium Economy</option>
+                            <option value="Business">Business</option>
+                            <option value="First">First</option>
+                            <option value="Any">Any</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="advanced-options">
+                    Advanced options
                 </div>
     
                 {/* Botón de búsqueda */}
