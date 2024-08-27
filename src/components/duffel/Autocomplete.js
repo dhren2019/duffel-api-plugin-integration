@@ -8,24 +8,30 @@ const Autocomplete = ({ label, placeholder, onSelect, fetchOptions }) => {
     const dropdownRef = useRef(null);
 
     useEffect(() => {
-        if (query.length >= 3 && !selectionMade) { // Evitar búsqueda si se hizo una selección
+        console.log(fetchOptions);
+        if (query.length >= 3 && !selectionMade) {
             console.log('Buscando datos para:', query);
-            const url = `${fetchOptions.url}?${fetchOptions.queryParam}=${encodeURIComponent(query)}`;
-
-            fetch(url)
-                .then((response) => response.json())
-                .then((data) => {
-                    console.log('Datos recibidos:', data);
-                    setResults(data.data || []);
-                    setDropdownVisible(data.data.length > 0);
-                })
-                .catch((error) => console.error('Error fetching locations:', error));
+            if (fetchOptions && fetchOptions.url) { // Asegúrate de que la URL esté definida
+                const url = `${fetchOptions.url}?${fetchOptions.queryParam}=${encodeURIComponent(query)}`;
+    
+                fetch(url)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log('Datos recibidos:', data);
+                        setResults(data.data || []);
+                        setDropdownVisible(data.data.length > 0);
+                    })
+                    .catch((error) => console.error('Error fetching locations:', error));
+            } else {
+                console.error('La URL de fetchOptions no está definida.');
+            }
         } else {
             console.log('Consulta demasiado corta o vacía, o selección hecha. Ocultando dropdown.');
             setResults([]);
             setDropdownVisible(false);
         }
     }, [query, fetchOptions, selectionMade]);
+    
 
     useEffect(() => {
         if (!isDropdownVisible && dropdownRef.current) {
