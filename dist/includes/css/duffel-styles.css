@@ -12,7 +12,7 @@
 .flight-search-container form {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px; /* Espacio más amplio entre los campos */
+    gap: 20px;
     align-items: center;
 }
 
@@ -27,8 +27,6 @@
 /* Mejora de los radio buttons */
 .journey-type-options input[type="radio"] {
     appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
     display: inline-block;
     width: 18px;
     height: 18px;
@@ -66,25 +64,90 @@
     cursor: pointer;
 }
 
+/* Estilo para el dropdown de pasajeros */
+.passenger-dropdown {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    width: 250px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.passenger-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.passenger-control span {
+    font-size: 16px;
+}
+
+.passenger-control div {
+    display: flex;
+    align-items: center;
+}
+
+.passenger-control button {
+    width: 30px;
+    height: 30px;
+    background: #5eb3f7;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    line-height: 1;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 5px;
+    transition: background 0.3s;
+}
+
+.passenger-control button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.passenger-control button:hover:not(:disabled) {
+    background: #007bff;
+}
+
 /* Alineación en la fila para origen y destino */
 .form-field {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
-/* Separación entre campos de fecha */
-.form-field.half-width {
-    margin-bottom: 20px;
-    margin-right: 20px;
+.form-field select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1px;
 }
 
-.form-field.half-width:last-child {
-    margin-right: 0;
+.form-field select:hover {
+    border-color: #5eb3f7;
+    box-shadow: 0 0 0 2px rgba(94, 179, 247, 0.2);
+}
+
+.form-field select:focus {
+    border-color: #5eb3f7;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(94, 179, 247, 0.4);
 }
 
 /* Estilo unificado para todos los input fields */
 input[type="text"],
-input[type="date"] {
+input[type="date"],
+select {
     width: 100%;
     padding: 12px;
     font-size: 16px;
@@ -97,13 +160,15 @@ input[type="date"] {
 }
 
 input[type="text"]:hover,
-input[type="date"]:hover {
+input[type="date"]:hover,
+select:hover {
     border-color: #5eb3f7;
     box-shadow: 0 0 0 2px rgba(94, 179, 247, 0.2);
 }
 
 input[type="text"]:focus,
-input[type="date"]:focus {
+input[type="date"]:focus,
+select:focus {
     border-color: #5eb3f7;
     outline: none;
     box-shadow: 0 0 0 2px rgba(94, 179, 247, 0.4);
@@ -121,8 +186,8 @@ input[type="date"]:focus {
     position: absolute;
     width: 100%;
     z-index: 1000;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1); /* Sombra más suave */
-    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
 .autocomplete-list li {

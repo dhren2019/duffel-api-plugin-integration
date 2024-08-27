@@ -10,6 +10,10 @@ function FlightSearch() {
     const [journeyType, setJourneyType] = useState('one-way');
     const [flights, setFlights] = useState([{ origin: null, destination: null, departureDate: '' }]);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+    
+    // Estado para pasajeros y clase
+    const [selectedPassengers, setSelectedPassengers] = useState('1 adult');
+    const [selectedClass, setSelectedClass] = useState('Economy');
 
     const dropdownRef = useRef(null);
 
@@ -80,18 +84,32 @@ function FlightSearch() {
             }
         }
     
-        // Configuración de los parámetros de búsqueda
+        // Convertir el valor de selectedPassengers en un array de objetos entendible para la API
+        const passengers = [];
+        if (selectedPassengers === "1 adult") {
+            passengers.push({ type: "adult" });
+        } else if (selectedPassengers === "2 adults") {
+            passengers.push({ type: "adult" }, { type: "adult" });
+        } else if (selectedPassengers === "1 adult, 1 child") {
+            passengers.push({ type: "adult" }, { type: "child" });
+        }
+    
+        // Configuración de los parámetros de búsqueda incluyendo pasajeros y clase
         const searchParams = journeyType === 'multi-city' 
             ? flights.map(flight => ({
                 origin: flight.origin.iata_code,
                 destination: flight.destination.iata_code,
-                departure_date: flight.departureDate
+                departure_date: flight.departureDate,
+                passengers: passengers, // Número de pasajeros
+                cabin_class: selectedClass // Tipo de clase
             }))
             : {
                 origin: selectedOrigin.iata_code,
                 destination: selectedDestination.iata_code,
                 departure_date: departureDate,
-                ...(journeyType === 'round-trip' && { return_date: returnDate })
+                ...(journeyType === 'round-trip' && { return_date: returnDate }),
+                passengers: passengers, // Número de pasajeros
+                cabin_class: selectedClass // Tipo de clase
             };
     
         // Depuración para asegurar que los parámetros son correctos
@@ -113,6 +131,15 @@ function FlightSearch() {
         })
         .then(data => {
             console.log('Resultados obtenidos:', data);
+    
+            // Si el resultado contiene información de precio, mostrarla en el log
+            if (data && data.data && data.data.offers) {
+                data.data.offers.forEach((offer, index) => {
+                    console.log(`Oferta ${index + 1}: Precio: ${offer.total_amount} ${offer.total_currency}`);
+                    console.log(`Clase: ${selectedClass}, Pasajeros: ${JSON.stringify(passengers)}`);
+                });
+            }
+    
             setResults(data);
         })
         .catch(error => console.error('Error en la búsqueda:', error));
@@ -220,6 +247,28 @@ function FlightSearch() {
                         <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
                     </div>
                 )}
+
+                {/* Campos para pasajeros y clase */}
+                <div className="form-field half-width">
+                    <label>Passengers</label>
+                    <select value={selectedPassengers} onChange={(e) => setSelectedPassengers(e.target.value)}>
+                        <option value="1 adult">1 adult</option>
+                        <option value="2 adults">2 adults</option>
+                        <option value="1 adult, 1 child">1 adult, 1 child</option>
+                        {/* Añade más opciones según necesites */}
+                    </select>
+                </div>
+
+                <div className="form-field half-width">
+                    <label>Class</label>
+                    <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)}>
+                        <option value="Economy">Economy</option>
+                        <option value="Premium Economy">Premium Economy</option>
+                        <option value="Business">Business</option>
+                        <option value="First">First</option>
+                        <option value="Any">Any</option>
+                    </select>
+                </div>
     
                 {/* Botón de búsqueda */}
                 <button type="submit">Find available flights</button>
@@ -235,4 +284,5 @@ function FlightSearch() {
         </div>
     );    
 }
+
 export default FlightSearch;
