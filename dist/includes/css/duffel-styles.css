@@ -11,12 +11,14 @@
 /* Organizando el formulario en un grid */
 .flight-search-container form {
     display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
     align-items: center;
 }
 
 /* La primera fila ocupa ambas columnas */
 .journey-type-options {
+    grid-column: span 2;
     display: flex;
     gap: 20px;
     margin-bottom: 10px;
@@ -63,26 +65,21 @@
     cursor: pointer;
 }
 
-/* Estilo para organizar los campos en pares */
+/* Ajuste para las filas de los campos */
 .form-row {
+    grid-column: span 2;
     display: flex;
     justify-content: space-between;
     gap: 20px;
-    width: 100%;
 }
 
-/* Alineación en la fila para origen y destino */
 .form-field {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    position: relative;
 }
 
-.form-field.half-width {
-    flex: 1;
-}
-
-/* Estilo unificado para todos los input fields */
+/* Asegurando que todos los campos se mantengan dentro del contenedor */
 input[type="text"],
 input[type="date"],
 select {
@@ -90,11 +87,11 @@ select {
     padding: 12px;
     font-size: 16px;
     border: 1px solid #ccc;
-    border-radius: 8px; 
+    border-radius: 8px;
     background-color: #fff;
     box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    margin-bottom: 1px; /* Espacio sutil entre los campos */
+    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
 }
 
 input[type="text"]:hover,
@@ -178,6 +175,7 @@ input[type="date"]:invalid:focus {
 
 /* Botón de búsqueda ocupa toda la fila */
 button[type="submit"] {
+    grid-column: span 2;
     padding: 12px;
     font-size: 16px;
     background-color: #000;
@@ -205,6 +203,7 @@ button[type="submit"]:hover {
 
 /* Advanced options */
 .advanced-options {
+    grid-column: span 2;
     text-align: right;
     font-size: 14px;
     color: #5eb3f7;
