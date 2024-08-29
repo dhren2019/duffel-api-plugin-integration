@@ -13,7 +13,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    align-items: center;
+    align-items: start; /* Asegura que los elementos se alineen al inicio */
+    overflow: visible;
 }
 
 /* La primera fila ocupa ambas columnas */
@@ -73,10 +74,22 @@
     gap: 20px;
 }
 
+/* Estilos específicos para los campos y separación */
 .form-field {
     flex: 1;
     display: flex;
     flex-direction: column;
+    position: relative;
+    margin-bottom: 20px; /* Asegura una separación uniforme entre todos los campos */
+}
+
+/* Separación específica para "Passengers" y "Class" */
+.form-field.half-width:first-child {
+    margin-right: 10px; /* Añade espacio a la derecha del campo "Passengers" */
+}
+
+.form-field.half-width:last-child {
+    margin-left: 10px; /* Añade espacio a la izquierda del campo "Class" */
 }
 
 /* Asegurando que todos los campos se mantengan dentro del contenedor */
@@ -91,7 +104,7 @@ select {
     background-color: #fff;
     box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+    box-sizing: border-box;
 }
 
 input[type="text"]:hover,
@@ -212,4 +225,120 @@ button[type="submit"]:hover {
 
 .advanced-options:hover {
     text-decoration: underline;
+}
+
+/* Estilos del selector de pasajeros */
+.passenger-selector {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.passenger-selector:hover {
+    border-color: #5eb3f7;
+    box-shadow: 0 0 0 2px rgba(94, 179, 247, 0.2);
+}
+
+.passenger-selector:focus {
+    border-color: #5eb3f7;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(94, 179, 247, 0.4);
+}
+
+/* Estilo del dropdown de pasajeros */
+.passenger-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 2000;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Estilo del select de "Class" */
+.form-field.half-width select {
+    appearance: none;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-field.half-width select:hover {
+    border-color: #5eb3f7;
+    box-shadow: 0 0 0 2px rgba(94, 179, 247, 0.2);
+}
+
+.form-field.half-width select:focus {
+    border-color: #5eb3f7;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(94, 179, 247, 0.4);
+}
+
+.passenger-counter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.passenger-counter:last-child {
+    border-bottom: none;
+}
+
+.counter-controls {
+    display: flex;
+    align-items: center;
+}
+
+.counter-controls button {
+    border: none;
+    background: #000;
+    color: #fff;
+    padding: 6px 12px;
+    margin: 0 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.counter-controls button:hover {
+    background-color: #333;
+}
+
+.counter-controls span {
+    min-width: 20px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Estilos para etiquetas */
+.passenger-counter label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.passenger-counter span {
+    font-size: 12px;
+    color: #999;
 }

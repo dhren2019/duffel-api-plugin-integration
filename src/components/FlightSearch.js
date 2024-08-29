@@ -1,3 +1,4 @@
+// FlightSearch.js
 import React, { useState, useEffect, useRef } from 'react';
 import Autocomplete from './duffel/Autocomplete';
 
@@ -10,11 +11,10 @@ function FlightSearch() {
     const [journeyType, setJourneyType] = useState('one-way');
     const [flights, setFlights] = useState([{ origin: null, destination: null, departureDate: '' }]);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-    
-    // Estado para pasajeros y clase
     const [selectedPassengers, setSelectedPassengers] = useState('1 adult');
     const [selectedClass, setSelectedClass] = useState('Economy');
-
+    const [adultCount, setAdultCount] = useState(1);
+    const [childCount, setChildCount] = useState(0);
     const dropdownRef = useRef(null);
 
     useEffect(() => {
@@ -31,76 +31,68 @@ function FlightSearch() {
     }, [dropdownRef]);
 
     const handleJourneyTypeChange = (e) => {
-        setJourneyType(e.target.value);
-        if (e.target.value === 'one-way') {
+        const newJourneyType = e.target.value;
+        setJourneyType(newJourneyType);
+    
+        if (newJourneyType === 'one-way') {
             setFlights([{ origin: null, destination: null, departureDate: '' }]);
             setReturnDate('');
-        } else if (e.target.value === 'round-trip') {
+        } else if (newJourneyType === 'round-trip') {
             setFlights([{ origin: null, destination: null, departureDate: '', returnDate: '' }]);
-            setReturnDate(''); // Mantener limpio hasta que se seleccione una fecha
-        } else if (e.target.value === 'multi-city') {
+            setReturnDate('');
+        } else if (newJourneyType === 'multi-city') {
             setFlights([{ origin: null, destination: null, departureDate: '' }]);
         }
     };
+    
 
     const handleSearch = (event) => {
         event.preventDefault();
     
-        // Validación para "multi-city"
-        if (journeyType === 'multi-city') {
-            const missingParams = flights.some(flight => !flight.origin?.iata_code || !flight.destination?.iata_code || !flight.departureDate);
-            if (missingParams) {
-                setResults({
-                    code: "missing_params",
-                    message: "Faltan algunos parámetros requeridos en uno o más vuelos.",
-                    data: null
-                });
-                return;
-            }
-        } else {
-            // Validación para "one-way" y "round-trip"
-            if (!selectedOrigin?.iata_code || !selectedDestination?.iata_code || !departureDate || (journeyType === 'round-trip' && !returnDate)) {
-                setResults({
-                    code: "missing_params",
-                    message: "Faltan algunos parámetros requeridos (origin, destination, departure_date).",
-                    data: null
-                });
-                return;
-            }
+        // Validación de parámetros requeridos
+        const missingParams = journeyType === 'multi-city'
+            ? flights.some(flight => !flight.origin?.iata_code || !flight.destination?.iata_code || !flight.departureDate)
+            : (!selectedOrigin?.iata_code || !selectedDestination?.iata_code || !departureDate || (journeyType === 'round-trip' && !returnDate));
+    
+        if (missingParams) {
+            setResults({
+                code: "missing_params",
+                message: "Faltan algunos parámetros requeridos en uno o más vuelos.",
+                data: null
+            });
+            return;
         }
     
-        // Convertir el valor de selectedPassengers en un array de objetos entendible para la API
+        // Configuración de pasajeros
         const passengers = [];
-        if (selectedPassengers === "1 adult") {
+        for (let i = 0; i < adultCount; i++) {
             passengers.push({ type: "adult" });
-        } else if (selectedPassengers === "2 adults") {
-            passengers.push({ type: "adult" }, { type: "adult" });
-        } else if (selectedPassengers === "1 adult, 1 child") {
-            passengers.push({ type: "adult" }, { type: "child" });
+        }
+        for (let i = 0; i < childCount; i++) {
+            passengers.push({ type: "child" });
         }
     
-        // Configuración de los parámetros de búsqueda incluyendo pasajeros y clase
-        const searchParams = journeyType === 'multi-city' 
+        // Configuración de los parámetros de búsqueda
+        const searchParams = journeyType === 'multi-city'
             ? flights.map(flight => ({
                 origin: flight.origin.iata_code,
                 destination: flight.destination.iata_code,
                 departure_date: flight.departureDate,
-                passengers: passengers, // Número de pasajeros
-                cabin_class: selectedClass // Tipo de clase
+                passengers: passengers,
+                cabin_class: selectedClass.toLowerCase()
             }))
             : {
                 origin: selectedOrigin.iata_code,
                 destination: selectedDestination.iata_code,
                 departure_date: departureDate,
                 ...(journeyType === 'round-trip' && { return_date: returnDate }),
-                passengers: passengers, // Número de pasajeros
-                cabin_class: selectedClass // Tipo de clase
+                passengers: passengers,
+                cabin_class: selectedClass.toLowerCase()
             };
     
-        // Depuración para asegurar que los parámetros son correctos
         console.log('Enviando búsqueda con estos parámetros:', searchParams);
     
-        // Hacer la solicitud
+        // Solicitud a la API
         fetch('/wp-json/duffel/v1/search', {
             method: 'POST',
             headers: {
@@ -108,64 +100,91 @@ function FlightSearch() {
             },
             body: JSON.stringify(searchParams)
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error en la solicitud: ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Resultados obtenidos:', data);
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Resultados obtenidos:', data);
     
-            // Si el resultado contiene información de precio, mostrarla en el log
-            if (data && data.data && data.data.offers) {
-                data.data.offers.forEach((offer, index) => {
-                    console.log(`Oferta ${index + 1}: Precio: ${offer.total_amount} ${offer.total_currency}`);
-                    console.log(`Clase: ${selectedClass}, Pasajeros: ${JSON.stringify(passengers)}`);
+                // Mostrar ofertas en los resultados
+                if (data?.data?.offers) {
+                    data.data.offers.forEach((offer, index) => {
+                        console.log(`Oferta ${index + 1}: Precio: ${offer.total_amount} ${offer.total_currency}`);
+                        console.log(`Clase: ${selectedClass}, Pasajeros: ${JSON.stringify(passengers)}`);
+                    });
+                }
+    
+                setResults(data);
+            })
+            .catch(error => {
+                console.error('Error en la búsqueda:', error);
+                setResults({
+                    code: "fetch_error",
+                    message: "Error al realizar la búsqueda. Verifica la consola para más detalles.",
+                    data: null
                 });
-            }
-    
-            setResults(data);
-        })
-        .catch(error => console.error('Error en la búsqueda:', error));
-    };
-    
+            });
+        }
 
     const handleSelect = (location, type, index) => {
-        if (location && location.iata_code && location.name) {
-            const newFlights = [...flights];
-
-            if (index !== undefined) {
-                if (type === 'origin') {
-                    newFlights[index].origin = location;
-                } else if (type === 'destination') {
-                    newFlights[index].destination = location;
-                }
-            } else {
-                if (type === 'origin') {
-                    setSelectedOrigin(location);
-                } else if (type === 'destination') {
-                    setSelectedDestination(location);
-                }
+        const newFlights = [...flights];
+        if (index !== undefined) {
+            if (type === 'origin') {
+                newFlights[index].origin = location;
+            } else if (type === 'destination') {
+                newFlights[index].destination = location;
             }
-
-            setFlights(newFlights);
-            setIsDropdownVisible(false);
         } else {
-            console.error('Datos de ubicación inválidos:', location);
+            if (type === 'origin') {
+                setSelectedOrigin(location);
+            } else if (type === 'destination') {
+                setSelectedDestination(location);
+            }
+        }
+        setFlights(newFlights);
+        setIsDropdownVisible(false);
+    };
+
+    // Actualiza la etiqueta de pasajeros
+    const updatePassengerLabel = (adults, children) => {
+        let label = `${adults} adult${adults > 1 ? 's' : ''}`;
+        if (children > 0) {
+            label += `, ${children} child${children > 1 ? 'ren' : ''}`;
+        }
+        setSelectedPassengers(label);
+    };
+
+    // Funciones para manejar los cambios de conteo de pasajeros adultos y niños
+    const incrementAdult = () => {
+        setAdultCount(adultCount + 1);
+        updatePassengerLabel(adultCount + 1, childCount);
+    };
+
+    const decrementAdult = () => {
+        if (adultCount > 1) {
+            setAdultCount(adultCount - 1);
+            updatePassengerLabel(adultCount - 1, childCount);
         }
     };
 
-    const handleFocus = () => {
-        if (!isDropdownVisible) {
-            setIsDropdownVisible(true);
+    const incrementChild = () => {
+        setChildCount(childCount + 1);
+        updatePassengerLabel(adultCount, childCount + 1);
+    };
+
+    const decrementChild = () => {
+        if (childCount > 0) {
+            setChildCount(childCount - 1);
+            updatePassengerLabel(adultCount, childCount - 1);
         }
     };
-    
+
     return (
         <div className="flight-search-container">
             <form onSubmit={handleSearch}>
-                {/* Primera fila: Tipo de viaje */}
                 <div className="journey-type-options">
                     <label>
                         <input
@@ -195,8 +214,7 @@ function FlightSearch() {
                         Multi-city
                     </label>
                 </div>
-    
-                {/* Segunda fila: Origen y Destino */}
+
                 <div className="form-row">
                     <div className="form-field half-width">
                         <label>Origin</label>
@@ -221,14 +239,13 @@ function FlightSearch() {
                         />
                     </div>
                 </div>
-    
-                {/* Tercera fila: Fecha de salida y, si aplica, Fecha de regreso */}
+
                 <div className="form-row">
                     <div className="form-field half-width">
                         <label>Departure date</label>
                         <input type="date" value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
                     </div>
-    
+
                     {journeyType === 'round-trip' && (
                         <div className="form-field half-width">
                             <label>Return date</label>
@@ -237,16 +254,37 @@ function FlightSearch() {
                     )}
                 </div>
 
-                {/* Cuarta fila: Pasajeros y clase */}
                 <div className="form-row">
-                    <div className="form-field half-width">
+                    <div className="form-field half-width" ref={dropdownRef}>
                         <label>Passengers</label>
-                        <select value={selectedPassengers} onChange={(e) => setSelectedPassengers(e.target.value)}>
-                            <option value="1 adult">1 adult</option>
-                            <option value="2 adults">2 adults</option>
-                            <option value="1 adult, 1 child">1 adult, 1 child</option>
-                            {/* Añade más opciones según necesites */}
-                        </select>
+                        <div
+                            className="passenger-selector"
+                            onClick={() => setIsDropdownVisible((prev) => !prev)}
+                        >
+                            {selectedPassengers}
+                        </div>
+                        {isDropdownVisible && (
+                            <div className="passenger-dropdown">
+                                <div className="passenger-counter">
+                                    <label>Adults</label>
+                                    <span>18+</span>
+                                    <div className="counter-controls">
+                                        <button type="button" onClick={decrementAdult}>-</button>
+                                        <span>{adultCount}</span>
+                                        <button type="button" onClick={incrementAdult}>+</button>
+                                    </div>
+                                </div>
+                                <div className="passenger-counter">
+                                    <label>Children</label>
+                                    <span>0-17</span>
+                                    <div className="counter-controls">
+                                        <button type="button" onClick={decrementChild}>-</button>
+                                        <span>{childCount}</span>
+                                        <button type="button" onClick={incrementChild}>+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="form-field half-width">
@@ -261,23 +299,18 @@ function FlightSearch() {
                     </div>
                 </div>
 
-                <div className="advanced-options">
-                    Advanced options
-                </div>
-    
-                {/* Botón de búsqueda */}
                 <button type="submit">Find available flights</button>
             </form>
-    
-            {/* Mostrar los resultados */}
+
+            {/* Mostrar los resultados en formato JSON preformateado */}
             {results && (
                 <div className="results-container">
                     <h3>Search Results:</h3>
-                    <pre>{JSON.stringify(results, null, 2)}</pre> {/* Esto renderiza los resultados en formato JSON */}
+                    <pre>{JSON.stringify(results, null, 2)}</pre>
                 </div>
             )}
         </div>
-    );    
+    );
 }
 
 export default FlightSearch;
