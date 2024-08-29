@@ -49,85 +49,113 @@ function FlightSearch() {
     const handleSearch = (event) => {
         event.preventDefault();
     
-        // Validación de parámetros requeridos
-        const missingParams = journeyType === 'multi-city'
-            ? flights.some(flight => !flight.origin?.iata_code || !flight.destination?.iata_code || !flight.departureDate)
-            : (!selectedOrigin?.iata_code || !selectedDestination?.iata_code || !departureDate || (journeyType === 'round-trip' && !returnDate));
+        // Limpiar los resultados previos para evitar mostrar datos antiguos.
+        setResults(null);
     
-        if (missingParams) {
-            setResults({
-                code: "missing_params",
-                message: "Faltan algunos parámetros requeridos en uno o más vuelos.",
-                data: null
-            });
-            return;
+        // Validación para "multi-city"
+        if (journeyType === 'multi-city') {
+            const missingParams = flights.some(
+                (flight) => !flight.origin?.iata_code || !flight.destination?.iata_code || !flight.departureDate
+            );
+            if (missingParams) {
+                setResults({
+                    code: "missing_params",
+                    message: "Faltan algunos parámetros requeridos en uno o más vuelos.",
+                    data: null,
+                });
+                return;
+            }
+        } else {
+            // Validación para "one-way" y "round-trip"
+            if (
+                !selectedOrigin?.iata_code ||
+                !selectedDestination?.iata_code ||
+                !departureDate ||
+                (journeyType === 'round-trip' && !returnDate)
+            ) {
+                setResults({
+                    code: "missing_params",
+                    message: "Faltan algunos parámetros requeridos (origin, destination, departure_date).",
+                    data: null,
+                });
+                return;
+            }
         }
     
-        // Configuración de pasajeros
+        // Convertir el valor de selectedPassengers en un array de objetos entendible para la API
         const passengers = [];
-        for (let i = 0; i < adultCount; i++) {
+        if (selectedPassengers === "1 adult") {
             passengers.push({ type: "adult" });
-        }
-        for (let i = 0; i < childCount; i++) {
-            passengers.push({ type: "child" });
+        } else if (selectedPassengers === "2 adults") {
+            passengers.push({ type: "adult" }, { type: "adult" });
+        } else if (selectedPassengers === "1 adult, 1 child") {
+            passengers.push({ type: "adult" }, { type: "child" });
         }
     
-        // Configuración de los parámetros de búsqueda
-        const searchParams = journeyType === 'multi-city'
-            ? flights.map(flight => ({
-                origin: flight.origin.iata_code,
-                destination: flight.destination.iata_code,
-                departure_date: flight.departureDate,
-                passengers: passengers,
-                cabin_class: selectedClass.toLowerCase()
-            }))
-            : {
-                origin: selectedOrigin.iata_code,
-                destination: selectedDestination.iata_code,
-                departure_date: departureDate,
-                ...(journeyType === 'round-trip' && { return_date: returnDate }),
-                passengers: passengers,
-                cabin_class: selectedClass.toLowerCase()
-            };
+        // Configuración de los parámetros de búsqueda incluyendo pasajeros y clase
+        const searchParams =
+            journeyType === 'multi-city'
+                ? flights.map((flight) => ({
+                      origin: flight.origin.iata_code,
+                      destination: flight.destination.iata_code,
+                      departure_date: flight.departureDate,
+                      passengers: passengers, // Número de pasajeros
+                      cabin_class: selectedClass, // Tipo de clase
+                  }))
+                : {
+                      origin: selectedOrigin.iata_code,
+                      destination: selectedDestination.iata_code,
+                      departure_date: departureDate,
+                      ...(journeyType === 'round-trip' && { return_date: returnDate }),
+                      passengers: passengers, // Número de pasajeros
+                      cabin_class: selectedClass, // Tipo de clase
+                  };
     
+        // Depuración para asegurar que los parámetros son correctos
         console.log('Enviando búsqueda con estos parámetros:', searchParams);
     
-        // Solicitud a la API
+        // Hacer la solicitud
         fetch('/wp-json/duffel/v1/search', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(searchParams)
+            body: JSON.stringify(searchParams),
         })
-            .then(response => {
+            .then((response) => {
                 if (!response.ok) {
                     throw new Error('Error en la solicitud: ' + response.statusText);
                 }
                 return response.json();
             })
-            .then(data => {
+            .then((data) => {
                 console.log('Resultados obtenidos:', data);
     
-                // Mostrar ofertas en los resultados
-                if (data?.data?.offers) {
+                // Si el resultado contiene información de precio, mostrarla en el log
+                if (data && data.data && data.data.offers) {
                     data.data.offers.forEach((offer, index) => {
-                        console.log(`Oferta ${index + 1}: Precio: ${offer.total_amount} ${offer.total_currency}`);
-                        console.log(`Clase: ${selectedClass}, Pasajeros: ${JSON.stringify(passengers)}`);
+                        console.log(
+                            `Oferta ${index + 1}: Precio: ${offer.total_amount} ${offer.total_currency}`
+                        );
+                        console.log(
+                            `Clase: ${selectedClass}, Pasajeros: ${JSON.stringify(passengers)}`
+                        );
                     });
                 }
     
+                // Actualizar los resultados con la nueva respuesta
                 setResults(data);
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error('Error en la búsqueda:', error);
                 setResults({
                     code: "fetch_error",
                     message: "Error al realizar la búsqueda. Verifica la consola para más detalles.",
-                    data: null
+                    data: null,
                 });
             });
-        }
+    };
+    
 
     const handleSelect = (location, type, index) => {
         const newFlights = [...flights];
