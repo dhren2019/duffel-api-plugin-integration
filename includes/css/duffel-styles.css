@@ -342,3 +342,98 @@ button[type="submit"]:hover {
     font-size: 12px;
     color: #999;
 }
+
+.flight-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.flight-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    transition: box-shadow 0.3s;
+}
+
+.flight-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.flight-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.select-button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.select-button:hover {
+    background-color: #333;
+}
+.container {
+    display: flex;
+    min-height: 100vh; /* Ocupa toda la altura de la pantalla */
+}
+
+.menu {
+    width: 250px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    position: sticky;
+    top: 0;
+    height: 100vh; /* Asegura que cubre toda la altura de la ventana */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto; /* Permite scroll en el contenido si es necesario */
+}
+
+.flight-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.flight-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.3s;
+}
+
+.flight-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.select-button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.select-button:hover {
+    background-color: #333;
+}
